@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2018 Jakob Meng, <jakobmeng@web.de>
+/* Copyright (c) 2019 Abdullah Güntepe, <abdullah@guentepe.com>
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,14 +16,14 @@
 
 #pragma once
 
-#ifndef HBRS_MPL_FWD_FN_SVD_HPP
-#define HBRS_MPL_FWD_FN_SVD_HPP
-
-#include <hbrs/mpl/config.hpp>
-#include <hbrs/mpl/fwd/dt/function.hpp>
+#include <hbrs/mpl/fwd/fn/givens.hpp>
+#include <hbrs/mpl/dt/function.hpp>
+#include <hbrs/mpl/preprocessor/core.hpp>
 
 HBRS_MPL_NAMESPACE_BEGIN
-HBRS_MPL_DEC_F1(svd, svd_t)
+HBRS_MPL_DEF_F2(givens, givens_t)
 HBRS_MPL_NAMESPACE_END
 
-#endif // !HBRS_MPL_FWD_FN_SVD_HPP
+#include <hbrs/mpl/fuse/fn/givens.hpp>
+#include <hbrs/mpl/core/implementations_of.hpp>
+HBRS_MPL_MAP_IMPLS(givens_t, HBRS_MPL_FUSE_FN_GIVENS_IMPLS)

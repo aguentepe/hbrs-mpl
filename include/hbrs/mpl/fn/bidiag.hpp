@@ -23,7 +23,7 @@
 #include <hbrs/mpl/dt/function.hpp>
 
 HBRS_MPL_NAMESPACE_BEGIN
-HBRS_MPL_DEF_F2(bidiag, bidiag_t)
+HBRS_MPL_DEF_F1(bidiag, bidiag_t)
 HBRS_MPL_NAMESPACE_END
 
 #include <hbrs/mpl/fuse/fn/bidiag.hpp>

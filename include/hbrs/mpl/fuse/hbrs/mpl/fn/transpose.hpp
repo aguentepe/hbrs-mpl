@@ -23,6 +23,9 @@
 #include <hbrs/mpl/preprocessor/core.hpp>
 #include <hbrs/mpl/dt/srv.hpp>
 #include <hbrs/mpl/dt/scv.hpp>
+#include <hbrs/mpl/dt/Matrix.hpp>
+#include <hbrs/mpl/dt/CVector.hpp>
+#include <hbrs/mpl/dt/RVector.hpp>
 #include <boost/hana/tuple.hpp>
 
 HBRS_MPL_NAMESPACE_BEGIN
@@ -55,12 +58,42 @@ struct transpose_impl_scv {
 	}
 };
 
+struct transpose_impl_Matrix {
+    decltype(auto)
+    operator()(Matrix const& M) const {
+        Matrix result {M.n(), M.m()};
+        for (std::size_t i {0}; i < result.m(); ++i) {
+            for (std::size_t j {0}; j < result.n(); ++j) {
+                result.at(i, j) = M.at(j, i);
+            }
+        }
+        return result;
+    }
+};
+
+struct transpose_impl_CVector {
+    decltype(auto)
+    operator()(CVector<double> const& v) const {
+        return RVector{v};
+    }
+};
+
+struct transpose_impl_RVector {
+    decltype(auto)
+    operator()(RVector const& v) const {
+        return v.transpose();
+    }
+};
+
 /* namespace detail */ }
 HBRS_MPL_NAMESPACE_END
 
 #define HBRS_MPL_FUSE_HBRS_MPL_FN_TRANSPOSE_IMPLS boost::hana::make_tuple(                                             \
 		hbrs::mpl::detail::transpose_impl_srv{},                                                                       \
-		hbrs::mpl::detail::transpose_impl_scv{}                                                                        \
+		hbrs::mpl::detail::transpose_impl_scv{},                                                                        \
+		hbrs::mpl::detail::transpose_impl_Matrix{},\
+		hbrs::mpl::detail::transpose_impl_CVector{},\
+		hbrs::mpl::detail::transpose_impl_RVector{}\
 	)
 
 #endif // !HBRS_MPL_FUSE_HBRS_MPL_FN_TRANSPOSE_HPP
