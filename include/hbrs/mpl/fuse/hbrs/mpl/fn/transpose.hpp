@@ -23,9 +23,9 @@
 #include <hbrs/mpl/preprocessor/core.hpp>
 #include <hbrs/mpl/dt/srv.hpp>
 #include <hbrs/mpl/dt/scv.hpp>
-#include <hbrs/mpl/dt/Matrix.hpp>
-#include <hbrs/mpl/dt/CVector.hpp>
-#include <hbrs/mpl/dt/RVector.hpp>
+#include <hbrs/mpl/dt/rtsam.hpp>
+#include <hbrs/mpl/dt/rtsacv.hpp>
+#include <hbrs/mpl/dt/rtsarv.hpp>
 #include <boost/hana/tuple.hpp>
 
 HBRS_MPL_NAMESPACE_BEGIN
@@ -58,29 +58,35 @@ struct transpose_impl_scv {
 	}
 };
 
-struct transpose_impl_Matrix {
+struct transpose_impl_rtsam {
+	template<
+		typename Ring,
+		storage_order Order
+	>
     decltype(auto)
-    operator()(Matrix const& M) const {
-        Matrix result {M.n(), M.m()};
+    operator()(rtsam<Ring,Order> const& M) const {
+        rtsam<Ring,Order> result {M.n(), M.m()};
         for (std::size_t i {0}; i < result.m(); ++i) {
             for (std::size_t j {0}; j < result.n(); ++j) {
-                result.at(i, j) = M.at(j, i);
+                result.at(make_matrix_index(i, j)) = M.at(make_matrix_index(j, i));
             }
         }
         return result;
     }
 };
 
-struct transpose_impl_CVector {
+struct transpose_impl_rtsacv {
+	template<typename Ring>
     decltype(auto)
-    operator()(CVector<double> const& v) const {
-        return RVector{v};
+    operator()(rtsacv<Ring> const& v) const {
+        return rtsarv(v);
     }
 };
 
-struct transpose_impl_RVector {
+struct transpose_impl_rtsarv {
+	template<typename Ring>
     decltype(auto)
-    operator()(RVector const& v) const {
+    operator()(rtsarv<Ring> const& v) const {
         return v.transpose();
     }
 };
@@ -91,9 +97,9 @@ HBRS_MPL_NAMESPACE_END
 #define HBRS_MPL_FUSE_HBRS_MPL_FN_TRANSPOSE_IMPLS boost::hana::make_tuple(                                             \
 		hbrs::mpl::detail::transpose_impl_srv{},                                                                       \
 		hbrs::mpl::detail::transpose_impl_scv{},                                                                        \
-		hbrs::mpl::detail::transpose_impl_Matrix{},\
-		hbrs::mpl::detail::transpose_impl_CVector{},\
-		hbrs::mpl::detail::transpose_impl_RVector{}\
+		hbrs::mpl::detail::transpose_impl_rtsam{},\
+		hbrs::mpl::detail::transpose_impl_rtsacv{},\
+		hbrs::mpl::detail::transpose_impl_rtsarv{}\
 	)
 
 #endif // !HBRS_MPL_FUSE_HBRS_MPL_FN_TRANSPOSE_HPP

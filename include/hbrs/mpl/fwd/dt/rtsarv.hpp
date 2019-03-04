@@ -16,19 +16,23 @@
 
 #pragma once
 
-#ifndef HBRS_MPL_FN_HOUSE_HPP
-#define HBRS_MPL_FN_HOUSE_HPP
+#ifndef HBRS_MPL_FWD_DT_RTSARV_HPP
+#define HBRS_MPL_FWD_DT_RTSARV_HPP
 
-#include <hbrs/mpl/fwd/fn/house.hpp>
-#include <hbrs/mpl/dt/function.hpp>
-#include <hbrs/mpl/preprocessor/core.hpp>
+#include <hbrs/mpl/config.hpp>
+#include <boost/hana/fwd/core/make.hpp>
+#include <boost/hana/fwd/core/to.hpp>
 
 HBRS_MPL_NAMESPACE_BEGIN
-HBRS_MPL_DEF_F1(house, house_t)
+namespace hana = boost::hana;
+
+/* runtime-size array/continuous/dense/shared-memory row vector */
+template<typename /* type of vector entries */ Ring>
+struct rtsarv;
+struct rtsarv_tag{};
+constexpr auto make_rtsarv = hana::make<rtsarv_tag>;
+constexpr auto to_rtsarv = hana::to<rtsarv_tag>;
+
 HBRS_MPL_NAMESPACE_END
 
-#include <hbrs/mpl/fuse/fn/house.hpp>
-#include <hbrs/mpl/core/implementations_of.hpp>
-HBRS_MPL_MAP_IMPLS(house_t, HBRS_MPL_FUSE_FN_HOUSE_IMPLS)
-
-#endif // !HBRS_MPL_FN_HOUSE_HPP
+#endif // !HBRS_MPL_FWD_DT_RTSARV_HPP

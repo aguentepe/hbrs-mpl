@@ -16,6 +16,9 @@
 
 #pragma once
 
+#ifndef HBRS_MPL_FN_GIVENS_HPP
+#define HBRS_MPL_FN_GIVENS_HPP
+
 #include <hbrs/mpl/fwd/fn/givens.hpp>
 #include <hbrs/mpl/dt/function.hpp>
 #include <hbrs/mpl/preprocessor/core.hpp>
@@ -27,3 +30,5 @@ HBRS_MPL_NAMESPACE_END
 #include <hbrs/mpl/fuse/fn/givens.hpp>
 #include <hbrs/mpl/core/implementations_of.hpp>
 HBRS_MPL_MAP_IMPLS(givens_t, HBRS_MPL_FUSE_FN_GIVENS_IMPLS)
+
+#endif // !HBRS_MPL_FN_GIVENS_HPP

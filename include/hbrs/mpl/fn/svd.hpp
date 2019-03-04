@@ -23,7 +23,7 @@
 #include <hbrs/mpl/dt/function.hpp>
 
 HBRS_MPL_NAMESPACE_BEGIN
-HBRS_MPL_DEF_F1(svd, svd_t)
+HBRS_MPL_DEF_F2(svd, svd_t)
 HBRS_MPL_NAMESPACE_END
 
 #include <hbrs/mpl/fuse/fn/svd.hpp>

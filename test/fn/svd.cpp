@@ -25,7 +25,6 @@
 #include <hbrs/mpl/dt/ctsav.hpp>
 #include <hbrs/mpl/dt/sm.hpp>
 #include <hbrs/mpl/dt/range.hpp>
-#include <hbrs/mpl/dt/Matrix.hpp>
 #include <hbrs/mpl/dt/matrix_index.hpp>
 #include <hbrs/mpl/dt/matrix_size.hpp>
 #include <hbrs/mpl/dt/decompose_mode.hpp>
@@ -36,10 +35,10 @@
 #include <hbrs/mpl/fn/transpose.hpp>
 #include <hbrs/mpl/fn/select.hpp>
 #ifdef HBRS_MPL_ENABLE_ADDON_ELEMENTAL
-	#include <elemental/dt/matrix.hpp>
+//	#include <elemental/dt/matrix.hpp>
 #endif
 #ifdef HBRS_MPL_ENABLE_ADDON_MATLAB
-	#include <matlab/dt/matrix.hpp>
+//	#include <matlab/dt/matrix.hpp>
 #endif
 #include <boost/hana/tuple.hpp>
 #include <boost/hana/transform.hpp>
@@ -63,34 +62,37 @@ namespace tt = boost::test_tools;
 
 BOOST_AUTO_TEST_SUITE(svd_test)
 
-using hbrs::mpl::detail::environment_fixture;
-BOOST_TEST_GLOBAL_FIXTURE(environment_fixture);
+//using hbrs::mpl::detail::environment_fixture;
+//BOOST_TEST_GLOBAL_FIXTURE(environment_fixture);
 
-BOOST_AUTO_TEST_CASE(svd_Matrix) {
+BOOST_AUTO_TEST_CASE(svd_matrix) {
 	using namespace hbrs::mpl;
-	Matrix A{{1, 2, 3,
-			  4, 5, 6,
-			  7, 8, 9}, 3};
+	rtsam<double, storage_order::row_major> A{
+		{1, 2, 3,
+		 4, 5, 6,
+		 7, 8, 9}, 3};
 	//     Matrix B{{1, 2, 3, 4,
 	//               5, 6, 7, 8,
 	//               9, 10, 11, 12}, 3};
-	Matrix C{{1, 2, 3,
-			  4, 5, 6,
-			  7, 8, 9,
-			  10, 11, 12}, 4};
-	Matrix D{{1, 0,  0,  0,
-			  0, 6,  7,  0,
-			  0, 0, 11, 12,
-			  0, 0,  0,  0}, 4};
+	rtsam<double, storage_order::row_major> C{
+		{1, 2,  3,
+		 4, 5,  6,
+		 7, 8,  9,
+		10, 11, 12}, 4};
+	rtsam<double, storage_order::row_major> D{
+		{1, 0,  0,  0,
+		 0, 6,  7,  0,
+		 0, 0, 11, 12,
+		 0, 0,  0,  0}, 4};
 			  
-	auto ASVD{svd(A)};
-	auto CSVD{svd(C)};
-	auto DSVD{svd(D)};
+	auto ASVD{svd(A,0)};
+	auto CSVD{svd(C,0)};
+	auto DSVD{svd(D,0)};
 
-	auto AA {ASVD[0_c] * ASVD[1_c] * transpose(ASVD[2_c])};
+	auto AA {ASVD.u() * ASVD.s() * transpose(ASVD.v())};
 	BOOST_TEST(AA == A);
-	BOOST_TEST(CSVD[0_c] * CSVD[1_c] * transpose(CSVD[2_c]) == C);
-	BOOST_TEST(DSVD[0_c] * DSVD[1_c] * transpose(DSVD[2_c]) == D);
+	BOOST_TEST(CSVD.u() * CSVD.s() * transpose(CSVD.v()) == C);
+	BOOST_TEST(DSVD.u() * DSVD.s() * transpose(DSVD.v()) == D);
 }
 
 BOOST_AUTO_TEST_CASE(svd_comparison, * utf::tolerance(0.000000001)) {

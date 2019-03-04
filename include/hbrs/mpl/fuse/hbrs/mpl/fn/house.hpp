@@ -16,53 +16,64 @@
 
 #pragma once
 
+#ifndef HBRS_MPL_FUSE_HBRS_MPL_FN_HOUSE_HPP
+#define HBRS_MPL_FUSE_HBRS_MPL_FN_HOUSE_HPP
+
 #include <hbrs/mpl/config.hpp>
 #include <hbrs/mpl/preprocessor/core.hpp>
-#include <hbrs/mpl/dt/CVector.hpp>
-#include <hbrs/mpl/dt/RVector.hpp>
+#include <hbrs/mpl/dt/rtsacv.hpp>
+#include <hbrs/mpl/dt/rtsarv.hpp>
+#include <hbrs/mpl/dt/range.hpp>
+#include <hbrs/mpl/dt/house_result.hpp>
 #include <hbrs/mpl/fn/house.hpp>
 #include <hbrs/mpl/fn/transpose.hpp>
-#include <boost/hana/tuple.hpp>
-#include <boost/hana/integral_constant.hpp>
 #include <cmath>
 
 HBRS_MPL_NAMESPACE_BEGIN
 namespace hana = boost::hana;
-using namespace hana::literals;
 namespace detail {
 
+/*
+ * Algorithm 5.1.1 (Householder Vector) on page 236
+ * Given the real column vector x, this function computes the real
+ * column vector v with v(0)=1 and the real number beta.
+ */
 struct house_impl {
-        /* constexpr */ 
-        decltype(auto)
-        operator()(CVector<double> const& x) {
-                auto const m {x.m()}; // copy for readability
+	template<typename Ring>
+	/* constexpr */ 
+	decltype(auto)
+	operator()(rtsacv<Ring> const& x) {
+			auto const m {x.m()}; // copy for readability
 
-                /* x2m is a temporary which is written x(2:m) in the book and is equivalent to x(Range(1,m-1)) in this code */
-                auto const x2m {x(Range(1, m-1))};
-                auto const sigma {transpose(x2m) * x2m};
+			/* x2m is a temporary which is written x(2:m) in the book and is equivalent to x(range(1,m-1)) in this code */
+			auto const x2m {x(range<std::size_t,std::size_t>(std::size_t{1}, m-1))};
+			auto const sigma {transpose(x2m) * x2m};
 
-                /* the tuple 'result' stores the vector 'ni' and the double 'beta' */
-                /* The vector ni is the vector x with the value 1 in its first row */
-                hana::tuple<CVector<double>, double> result {{x}, {0.}};
-                result[0_c].at(0) = 1;
+			/* The vector ni is the vector x with the value 1 in its first row */
+			auto result{make_house_result(x,0.)};
+			auto& ni{result.ni()};
+			auto& beta{result.beta()};
 
-                if (sigma == 0 && x.at(0) >= 0)
-                        result[1_c] = 0;
-                else if (sigma == 0 && x.at(0) < 0)
-                        /* In the book beta is set to -2 but in the Errata it says that it should be +2 */
-                        result[1_c] = 2;
-                else {
-                        auto const mi {std::sqrt(x.at(0) * x.at(0) + sigma)};
-                        if (x.at(0) <= 0)
-                            result[0_c].at(0) = x.at(0) - mi;
-                        else
-                            result[0_c].at(0) = -sigma / (x.at(0) + mi);
-                        auto const nisq = result[0_c].at(0) * result[0_c].at(0); // sqare of first element of ni
-                        result[1_c] = 2 * nisq / (sigma + nisq);
-                        result[0_c] = result[0_c] / result[0_c].at(0);
-                }
-                return result;
-        }
+			ni.at(0) = 1;
+
+			if (sigma == 0 && x.at(0) >= 0)
+					beta = 0;
+			else if (sigma == 0 && x.at(0) < 0)
+					/* In the book beta is set to -2 but in the Errata it says that it should be +2 */
+					beta = 2;
+			else {
+					auto const mi {std::sqrt(x.at(0) * x.at(0) + sigma)};
+					if (x.at(0) <= 0)
+						ni.at(0) = x.at(0) - mi;
+					else
+						ni.at(0) = -sigma / (x.at(0) + mi);
+					auto const nisq = ni.at(0) * ni.at(0); // sqare of first element of ni
+					beta = 2 * nisq / (sigma + nisq);
+					ni = ni / ni.at(0);
+			}
+			return result;
+
+	}
 };
 /* namespace detail */ }
 HBRS_MPL_NAMESPACE_END
@@ -70,3 +81,5 @@ HBRS_MPL_NAMESPACE_END
 #define HBRS_MPL_FUSE_HBRS_MPL_FN_HOUSE_IMPLS boost::hana::make_tuple(                                             \
 		hbrs::mpl::detail::house_impl{}                                                                       \
 	)
+
+#endif // !HBRS_MPL_FUSE_HBRS_MPL_FN_HOUSE_HPP

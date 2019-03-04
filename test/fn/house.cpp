@@ -20,25 +20,15 @@
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
 
-#include <hbrs/mpl/dt/zas.hpp>
-#include <hbrs/mpl/dt/rtsav.hpp>
+#include <hbrs/mpl/dt/rtsacv.hpp>
 #include <hbrs/mpl/fn/house.hpp>
-#include <hbrs/mpl/fn/equal.hpp>
-#include <boost/hana/integral_constant.hpp>
-
-#include <boost/hana/tuple.hpp>
-#include <boost/hana/first.hpp>
-#include <boost/hana/second.hpp>
-#include <array>
-#include <tuple>
-#include <vector>
 
 BOOST_AUTO_TEST_SUITE(house_test)
 
 BOOST_AUTO_TEST_CASE(house_test1) {
         using namespace hbrs::mpl;
 
-        CVector<double> x (3);
+        rtsacv<double> x (3);
         x.at(0) = 5;
         x.at(1) = 2;
         x.at(2) = 3;

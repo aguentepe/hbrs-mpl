@@ -1,4 +1,4 @@
-/* Copyright (c) 2018 Abdullah Güntepe, <abdullah@guentepe.com>
+/* Copyright (c) 2019 Abdullah Güntepe, <abdullah@guentepe.com>
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,16 +16,25 @@
 
 #pragma once
 
-#include <boost/assert.hpp>
+#ifndef HBRS_MPL_FWD_DT_HOUSE_RESULT_HPP
+#define HBRS_MPL_FWD_DT_HOUSE_RESULT_HPP
+
+#include <hbrs/mpl/config.hpp>
+#include <boost/hana/fwd/core/make.hpp>
+#include <boost/hana/fwd/core/to.hpp>
 
 HBRS_MPL_NAMESPACE_BEGIN
+namespace hana = boost::hana;
 
-struct Range {
-    std::size_t const begin, end;
-    constexpr Range(std::size_t const b, std::size_t const e)
-        : begin {b}, end {e} {
-        BOOST_ASSERT(b <= e);
-    }
-};
+template<typename Ni, typename Beta>
+struct house_result;
+struct house_result_tag {};
+constexpr auto make_house_result = hana::make<house_result_tag>;
+constexpr auto to_house_result = hana::to<house_result_tag>;
+
+struct house_ni;
+struct house_beta;
 
 HBRS_MPL_NAMESPACE_END
+
+#endif // !HBRS_MPL_FWD_DT_HOUSE_RESULT_HPP

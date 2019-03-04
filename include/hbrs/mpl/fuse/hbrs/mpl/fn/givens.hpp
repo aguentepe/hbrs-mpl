@@ -18,23 +18,32 @@
 
 #include <hbrs/mpl/config.hpp>
 #include <hbrs/mpl/preprocessor/core.hpp>
-#include <hbrs/mpl/dt/srv.hpp>
-#include <hbrs/mpl/dt/CVector.hpp>
-#include <hbrs/mpl/dt/scv.hpp>
+#include <hbrs/mpl/dt/rtsacv.hpp>
 #include <hbrs/mpl/fn/givens.hpp>
-#include <boost/hana/tuple.hpp>
 #include <cmath>
 
 HBRS_MPL_NAMESPACE_BEGIN
 namespace hana = boost::hana;
 namespace detail {
 
+/*
+ * Algorithm 5.1.3 (Calculate Givens scalars) on page 240
+ * --     --T   --   --         --   --
+ * |       |    |     |         |     |
+ * |  c s  |    |  a  |         |  r  |
+ * |       |    |     |    =    |     |
+ * | -s c  |    |  b  |         |  0  |
+ * |       |    |     |         |     |
+ * --     --    --   --         --   --
+ *
+ * Return a vector that contains c and s with c on index 0 and s on index 1
+ */
 struct givens_impl {
-        /* template <typename Vector> */
+        /* template <typename Ring> */
         /* constexpr */
         decltype(auto)
         operator()(double const a, double const b) const {
-                CVector<double> cs(2);
+                rtsacv<double> cs(2);
                 if (b == 0) {
                         cs.at(0) = 1;
                         cs.at(1) = 0;

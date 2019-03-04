@@ -21,6 +21,8 @@
 
 #include <hbrs/mpl/config.hpp>
 #include <hbrs/mpl/fuse/std/detail/operators.hpp>
+#include <hbrs/mpl/dt/storage_order.hpp>
+#include <hbrs/mpl/dt/rtsam.hpp>
 #include <boost/hana/tuple.hpp>
 #include <array>
 #include <type_traits>
@@ -57,6 +59,48 @@ struct equal_impl_std_array {
 	}
 };
 
+struct equal_impl_rtsam {
+	template<
+		typename Ring,
+		storage_order Order
+	>
+	constexpr bool 
+	operator()(rtsam<Ring,Order> const& M1, rtsam<Ring,Order> const& M2) const {
+		if (M1.m() != M2.m() || M1.n() != M2.n()) {
+			return false;
+		}
+		for (std::size_t i {0}; i < M1.m(); ++i) {
+			for (std::size_t j {0}; j < M1.n(); ++j) {
+				if (!(std::abs(M1.at(make_matrix_index(i, j)) - M2.at(make_matrix_index(i, j))) <= std::numeric_limits<double>::epsilon() * 10000000000)) { // FIXME use proper epsilon
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+};
+
+struct equal_impl_rtsam_initializer_list {
+	template<
+		typename Ring,
+		storage_order Order
+	>
+	constexpr bool 
+	operator()(rtsam<Ring,Order> const& M, const std::initializer_list< double >& l) const {
+		if (M.m() * M.n() != l.size()) {
+			return false;
+		}
+		for (std::size_t i {0}; i < M.m(); ++i) {
+			for (std::size_t j {0}; j < M.n(); ++j) {
+				if (M.at(make_matrix_index(i, j)) != * (l.begin() + i * M.n() + j)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+};
+
 /* namespace detail */ }
 HBRS_MPL_NAMESPACE_END
 
@@ -67,7 +111,9 @@ HBRS_MPL_NAMESPACE_END
 		hbrs::mpl::detail::equal_impl_lhs_is_braces_constructible{},                                                   \
 		hbrs::mpl::detail::equal_impl_rhs_is_braces_constructible{},                                                   \
 		hbrs::mpl::detail::equal_impl_numeric_cast{},                                                                  \
-		hbrs::mpl::detail::equal_impl_op{}                                                                             \
+		hbrs::mpl::detail::equal_impl_op{},                                                                            \
+		hbrs::mpl::detail::equal_impl_rtsam{},                                                                         \
+		hbrs::mpl::detail::equal_impl_rtsam_initializer_list{}                                                         \
 	)
 
 #endif // !HBRS_MPL_FUSE_STD_FN_EQUAL_HPP

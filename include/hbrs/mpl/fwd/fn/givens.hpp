@@ -16,9 +16,14 @@
 
 #pragma once
 
+#ifndef HBRS_MPL_FWD_FN_GIVENS_HPP
+#define HBRS_MPL_FWD_FN_GIVENS_HPP
+
 #include <hbrs/mpl/config.hpp>
 #include <hbrs/mpl/fwd/dt/function.hpp>
 
 HBRS_MPL_NAMESPACE_BEGIN
 HBRS_MPL_DEC_F2(givens, givens_t)
 HBRS_MPL_NAMESPACE_END
+
+#endif // !HBRS_MPL_FWD_FN_GIVENS_HPP

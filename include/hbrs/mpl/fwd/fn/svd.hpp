@@ -23,7 +23,7 @@
 #include <hbrs/mpl/fwd/dt/function.hpp>
 
 HBRS_MPL_NAMESPACE_BEGIN
-HBRS_MPL_DEC_F1(svd, svd_t)
+HBRS_MPL_DEC_F2(svd, svd_t)
 HBRS_MPL_NAMESPACE_END
 
 #endif // !HBRS_MPL_FWD_FN_SVD_HPP
