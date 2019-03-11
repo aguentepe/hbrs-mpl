@@ -1,4 +1,4 @@
-/* Copyright (c) 2019 Abdullah Güntepe, <abdullah@guentepe.com>
+/* Copyright (c) 2019 Abdullah Güntepe <abdullah@guentepe.com>
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,23 +16,18 @@
 
 #pragma once
 
-#ifndef HBRS_MPL_FWD_DT_RTSACV_HPP
-#define HBRS_MPL_FWD_DT_RTSACV_HPP
+#ifndef HBRS_MPL_FN_ADD_HPP
+#define HBRS_MPL_FN_ADD_HPP
 
-#include <hbrs/mpl/config.hpp>
-#include <boost/hana/fwd/core/make.hpp>
-#include <boost/hana/fwd/core/to.hpp>
+#include <hbrs/mpl/fwd/fn/add.hpp>
+#include <hbrs/mpl/dt/function.hpp>
 
 HBRS_MPL_NAMESPACE_BEGIN
-namespace hana = boost::hana;
-
-/* runtime-size array/continuous/dense/shared-memory column vector */
-template<typename /* type of vector entries */ Ring>
-struct rtsacv;
-struct rtsacv_tag{};
-constexpr auto make_rtsacv = hana::make<rtsacv_tag>;
-constexpr auto to_rtsacv = hana::to<rtsacv_tag>;
-
+HBRS_MPL_DEF_F2(add, add_t)
 HBRS_MPL_NAMESPACE_END
 
-#endif // !HBRS_MPL_FWD_DT_RTSACV_HPP
+#include <hbrs/mpl/fuse/fn/add.hpp>
+#include <hbrs/mpl/core/implementations_of.hpp>
+HBRS_MPL_MAP_IMPLS(add_t, HBRS_MPL_FUSE_FN_ADD_IMPLS)
+
+#endif // !HBRS_MPL_FN_ADD_HPP

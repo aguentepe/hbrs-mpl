@@ -25,6 +25,8 @@
 #include <hbrs/mpl/dt/ctsav.hpp>
 #include <hbrs/mpl/dt/sm.hpp>
 #include <hbrs/mpl/dt/range.hpp>
+#include <hbrs/mpl/dt/rtsam.hpp>
+#include <hbrs/mpl/dt/storage_order.hpp>
 #include <hbrs/mpl/dt/matrix_index.hpp>
 #include <hbrs/mpl/dt/matrix_size.hpp>
 #include <hbrs/mpl/dt/decompose_mode.hpp>
@@ -33,6 +35,7 @@
 #include <hbrs/mpl/fn/size.hpp>
 #include <hbrs/mpl/fn/svd.hpp>
 #include <hbrs/mpl/fn/transpose.hpp>
+#include <hbrs/mpl/fn/equal.hpp>
 #include <hbrs/mpl/fn/select.hpp>
 #ifdef HBRS_MPL_ENABLE_ADDON_ELEMENTAL
 //	#include <elemental/dt/matrix.hpp>
@@ -70,7 +73,7 @@ BOOST_AUTO_TEST_CASE(svd_matrix) {
 	rtsam<double, storage_order::row_major> A{
 		{1, 2, 3,
 		 4, 5, 6,
-		 7, 8, 9}, 3};
+		 7, 8, 9}, make_matrix_size(3,3)};
 	//     Matrix B{{1, 2, 3, 4,
 	//               5, 6, 7, 8,
 	//               9, 10, 11, 12}, 3};
@@ -78,18 +81,18 @@ BOOST_AUTO_TEST_CASE(svd_matrix) {
 		{1, 2,  3,
 		 4, 5,  6,
 		 7, 8,  9,
-		10, 11, 12}, 4};
+		10, 11, 12}, make_matrix_size(4,3)};
 	rtsam<double, storage_order::row_major> D{
 		{1, 0,  0,  0,
 		 0, 6,  7,  0,
 		 0, 0, 11, 12,
-		 0, 0,  0,  0}, 4};
+		 0, 0,  0,  0}, make_matrix_size(4,4)};
 			  
 	auto ASVD{svd(A,0)};
 	auto CSVD{svd(C,0)};
 	auto DSVD{svd(D,0)};
 
-	auto AA {ASVD.u() * ASVD.s() * transpose(ASVD.v())};
+	auto AA   {ASVD.u() * ASVD.s() * transpose(ASVD.v())};
 	BOOST_TEST(AA == A);
 	BOOST_TEST(CSVD.u() * CSVD.s() * transpose(CSVD.v()) == C);
 	BOOST_TEST(DSVD.u() * DSVD.s() * transpose(DSVD.v()) == D);

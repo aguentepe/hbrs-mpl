@@ -30,6 +30,41 @@
 
 HBRS_MPL_NAMESPACE_BEGIN
 namespace hana = boost::hana;
+
+template<typename Ring, storage_order Order>
+rtsam<Ring,Order>
+operator* (rtsam<Ring,Order> M, Ring const& d) {
+	return multiply(M,d);
+}
+
+template<typename Ring, storage_order Order>
+rtsam<Ring,Order>
+operator* (Ring const& d, rtsam<Ring,Order> M) {
+	return multiply(d,M);
+}
+
+template<typename Ring>
+decltype(auto)
+operator*(Ring const& s, rtsacv<Ring> v) {
+	return multiply(v,s);
+}
+
+template<
+	typename T1,
+	typename T2,
+	typename std::enable_if_t<
+		std::is_same_v< hana::tag_of_t<T1>, rtsam_tag  > && std::is_same_v< hana::tag_of_t<T2>, rtsam_tag  > ||
+		std::is_same_v< hana::tag_of_t<T1>, rtsam_tag  > && std::is_same_v< hana::tag_of_t<T2>, rtsacv_tag > ||
+		std::is_same_v< hana::tag_of_t<T1>, rtsacv_tag > && std::is_same_v< hana::tag_of_t<T2>, rtsarv_tag > ||
+		std::is_same_v< hana::tag_of_t<T1>, rtsarv_tag > && std::is_same_v< hana::tag_of_t<T2>, rtsam_tag  > ||
+		std::is_same_v< hana::tag_of_t<T1>, rtsarv_tag > && std::is_same_v< hana::tag_of_t<T2>, rtsacv_tag >
+	>* = nullptr
+>
+decltype(auto)
+operator*(T1 && t1, T2 && t2) {
+	return multiply(HBRS_MPL_FWD(t1), HBRS_MPL_FWD(t2));
+}
+
 namespace detail {
 
 struct multiply_impl_rtsarv_rtsacv {
@@ -101,9 +136,7 @@ struct multiply_impl_rtsam_rtsacv {
 };
 
 struct multiply_impl_rtsacv_rtsarv {
-	template<
-		typename Ring
-	>
+	template<typename Ring>
 	/* constexpr */ 
 	decltype(auto)
 	operator()(rtsacv<Ring> const& v1, rtsarv<Ring> const& v2) const {
@@ -146,17 +179,39 @@ struct multiply_impl_ring_rtsam {
 	}
 };
 
+struct multiply_impl_rtsacv_ring {
+	template<typename Ring>
+	/* constexpr */ 
+	decltype(auto)
+	operator()(rtsacv<Ring> v, Ring const& s) const {
+		for (std::size_t i {0}; i < v.m(); ++i)
+			v.at(i) *= s;
+		return v;
+	}
+};
+
+struct multiply_impl_ring_rtsacv {
+	template<typename Ring>
+	/* constexpr */ 
+	decltype(auto)
+	operator()(Ring const& s, rtsacv<Ring> v) const {
+		return multiply(v,s);
+	}
+};
+
 /* namespace detail */ }
 HBRS_MPL_NAMESPACE_END
 
-#define HBRS_MPL_FUSE_HBRS_MPL_FN_MULTIPLY_IMPLS boost::hana::make_tuple(\
-		hbrs::mpl::detail::multiply_impl_rtsarv_rtsacv{},\
-		hbrs::mpl::detail::multiply_impl_rtsam_rtsam{},\
-		hbrs::mpl::detail::multiply_impl_rtsarv_rtsam{},\
-		hbrs::mpl::detail::multiply_impl_rtsam_rtsacv{},\
-		hbrs::mpl::detail::multiply_impl_rtsacv_rtsarv{},\
-		hbrs::mpl::detail::multiply_impl_rtsam_ring{},\
-		hbrs::mpl::detail::multiply_impl_ring_rtsam{}\
+#define HBRS_MPL_FUSE_HBRS_MPL_FN_MULTIPLY_IMPLS boost::hana::make_tuple(                                              \
+		hbrs::mpl::detail::multiply_impl_rtsarv_rtsacv{},                                                              \
+		hbrs::mpl::detail::multiply_impl_rtsam_rtsam{},                                                                \
+		hbrs::mpl::detail::multiply_impl_rtsarv_rtsam{},                                                               \
+		hbrs::mpl::detail::multiply_impl_rtsam_rtsacv{},                                                               \
+		hbrs::mpl::detail::multiply_impl_rtsacv_rtsarv{},                                                              \
+		hbrs::mpl::detail::multiply_impl_rtsam_ring{},                                                                 \
+		hbrs::mpl::detail::multiply_impl_ring_rtsam{},                                                                 \
+		hbrs::mpl::detail::multiply_impl_rtsacv_ring{},                                                                \
+		hbrs::mpl::detail::multiply_impl_ring_rtsacv{}                                                                 \
 	)
 
 #endif // !HBRS_MPL_FUSE_HBRS_MPL_FN_MULTIPLY_HPP

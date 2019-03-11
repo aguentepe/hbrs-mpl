@@ -16,23 +16,37 @@
 
 #pragma once
 
-#ifndef HBRS_MPL_FWD_DT_RTSACV_HPP
-#define HBRS_MPL_FWD_DT_RTSACV_HPP
+#ifndef HBRS_MPL_FUSE_HBRS_MPL_FN_DIVIDE_HPP
+#define HBRS_MPL_FUSE_HBRS_MPL_FN_DIVIDE_HPP
 
 #include <hbrs/mpl/config.hpp>
-#include <boost/hana/fwd/core/make.hpp>
-#include <boost/hana/fwd/core/to.hpp>
+#include <hbrs/mpl/preprocessor/core.hpp>
+#include <hbrs/mpl/dt/rtsacv.hpp>
 
 HBRS_MPL_NAMESPACE_BEGIN
 namespace hana = boost::hana;
 
-/* runtime-size array/continuous/dense/shared-memory column vector */
-template<typename /* type of vector entries */ Ring>
-struct rtsacv;
-struct rtsacv_tag{};
-constexpr auto make_rtsacv = hana::make<rtsacv_tag>;
-constexpr auto to_rtsacv = hana::to<rtsacv_tag>;
+template<typename Ring>
+rtsacv<Ring> operator/(rtsacv<Ring> const& v, Ring const& d) {
+	return divide(v,d);
+}
 
+namespace detail {
+
+struct divide_impl_rtsacv_ring {
+	template<typename Ring>
+	/* constexpr */ 
+	decltype(auto)
+	operator()(rtsacv<Ring> const& v, Ring const& d) const {
+		return 1. / d * v;
+	}
+};
+
+/* namespace detail */ }
 HBRS_MPL_NAMESPACE_END
 
-#endif // !HBRS_MPL_FWD_DT_RTSACV_HPP
+#define HBRS_MPL_FUSE_HBRS_MPL_FN_DIVIDE_IMPLS boost::hana::make_tuple(\
+		hbrs::mpl::detail::divide_impl_rtsacv_ring{}\
+	)
+
+#endif // !HBRS_MPL_FUSE_HBRS_MPL_FN_DIVIDE_HPP

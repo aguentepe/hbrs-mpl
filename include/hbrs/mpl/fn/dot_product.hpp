@@ -16,23 +16,26 @@
 
 #pragma once
 
-#ifndef HBRS_MPL_FWD_DT_RTSACV_HPP
-#define HBRS_MPL_FWD_DT_RTSACV_HPP
+#ifndef HBRS_MPL_FUSE_HBRS_MPL_FN_DOT_PRODUCT_HPP
+#define HBRS_MPL_FUSE_HBRS_MPL_FN_DOT_PRODUCT_HPP
 
 #include <hbrs/mpl/config.hpp>
-#include <boost/hana/fwd/core/make.hpp>
-#include <boost/hana/fwd/core/to.hpp>
+#include <hbrs/mpl/preprocessor/core.hpp>
+#include <hbrs/mpl/dt/rtsacv.hpp>
 
 HBRS_MPL_NAMESPACE_BEGIN
-namespace hana = boost::hana;
+namespace detail {
 
-/* runtime-size array/continuous/dense/shared-memory column vector */
-template<typename /* type of vector entries */ Ring>
-struct rtsacv;
-struct rtsacv_tag{};
-constexpr auto make_rtsacv = hana::make<rtsacv_tag>;
-constexpr auto to_rtsacv = hana::to<rtsacv_tag>;
+template<typename Ring>
+Ring
+dot_product (rtsacv<Ring> const& v1, rtsacv<Ring> const& v2){
+    Ring sum {0};
+    for (std::size_t i {1}; i < v1.m(); ++i)
+        sum += v1.at(i) * v2.at(i);
+    return sum;
+}
 
+/* namespace detail */ }
 HBRS_MPL_NAMESPACE_END
 
-#endif // !HBRS_MPL_FWD_DT_RTSACV_HPP
+#endif // !HBRS_MPL_FUSE_HBRS_MPL_FN_DOT_PRODUCT_HPP

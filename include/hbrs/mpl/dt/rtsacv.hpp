@@ -22,41 +22,79 @@
 #include <hbrs/mpl/fwd/dt/rtsacv.hpp>
 
 #include <hbrs/mpl/preprocessor/core.hpp>
-/* #include <hbrs/mpl/dt/matrix_index.hpp> */
-/* #include <hbrs/mpl/dt/matrix_size.hpp> */
-/* #include <hbrs/mpl/dt/smr.hpp> */
-/* #include <hbrs/mpl/dt/storage_order.hpp> */
 #include <hbrs/mpl/dt/range.hpp>
-#include <hbrs/mpl/fn/m.hpp>
-#include <hbrs/mpl/fn/n.hpp>
+#include <vector>
 
 #include <boost/hana/core/make.hpp>
 #include <boost/hana/core/to.hpp>
 #include <boost/hana/type.hpp>
 #include <boost/assert.hpp>
 
-#include <vector>
-
 HBRS_MPL_NAMESPACE_BEGIN
 
-
-template<typename Ring>
-rtsacv<Ring>::rtsacv(std::initializer_list<Ring> const& l) : data_(l.size()) {
-	decltype(auto) begin{l.first()};
-	for (std::size_t i{0}; i < l.size(); ++i) {
-		at(i) = *(begin + i);
-	}
-}
+template<typename /* type of vector entries */ Ring>
+struct rtsacv {
+	explicit rtsacv(std::vector<Ring> data) : data_{data} {}
 	
-template<typename Ring>
-auto
-rtsacv<Ring>::operator() (range<std::size_t,std::size_t> const& r) const {
-	rtsacv v (r.last() - r.first() + 1);
-	for (std::size_t i = 0; i < v.m(); ++i) {
-		v.at(i) = at(i + r.first());
+	explicit rtsacv(std::size_t size) : data_(size, Ring{0}) {
+		BOOST_ASSERT(size >= 0);
 	}
-	return v;
-}
+
+	explicit rtsacv(std::initializer_list<Ring> const& l);
+	
+	rtsacv(rtsacv const&) = default;
+	rtsacv(rtsacv &&) = default;
+	
+	rtsacv&
+	operator=(rtsacv const&) = default;
+	rtsacv&
+	operator=(rtsacv &&) = default;
+	
+	auto const
+	size() const {
+		return data_.size();
+	}
+
+	decltype(auto)
+	vector() const {
+		return data_;
+	}
+
+	auto
+	m() const {
+		return data_.size();
+	}
+
+	template<
+		typename Index,
+		typename std::enable_if_t<std::is_integral_v<typename std::decay_t<Index>>>* = nullptr
+	>
+	decltype(auto)
+	at(Index && i) {
+		return data_[HBRS_MPL_FWD(i)];
+	}
+	
+	template<
+		typename Index,
+		typename std::enable_if_t<std::is_integral_v<typename std::decay_t<Index>>>* = nullptr
+	>
+	decltype(auto)
+	at(Index && i) const {
+		return data_[HBRS_MPL_FWD(i)];
+	}
+
+	auto
+	operator() (range<std::size_t,std::size_t> const& r) const {
+		rtsacv v (r.last() - r.first() + 1);
+		for (std::size_t i = 0; i < v.m(); ++i) {
+			v.at(i) = at(i + r.first());
+		}
+		return v;
+	}
+
+private:
+	std::vector<Ring> data_;
+};
 
 template<typename Ring>
 std::ostream& operator<< (std::ostream& os, rtsacv<Ring> const& v) {
@@ -64,50 +102,6 @@ std::ostream& operator<< (std::ostream& os, rtsacv<Ring> const& v) {
     for (std::size_t i {0}; i < v.m(); ++i)
         os << v.at(i) << std::endl;
     return os << '-' << std::endl;
-}
-
-template<typename Ring>
-Ring operator* (rtsacv<Ring> const& v1, rtsacv<Ring> const& v2){
-    Ring sum {0};
-    for (std::size_t i {1}; i < v1.m(); ++i)
-        sum += v1.at(i) * v2.at(i);
-    return sum;
-}
-
-template<typename Ring>
-rtsacv<Ring> operator* (Ring const s, rtsacv<Ring> v){
-    for (std::size_t i {0}; i < v.m(); ++i)
-        v.at(i) *= s;
-    return v;
-}
-
-template<typename Ring>
-rtsacv<Ring> operator* (rtsacv<Ring> const& v, Ring const s) {
-    return s * v;
-}
-
-template<typename Ring>
-rtsacv<Ring> operator+ (Ring const d, rtsacv<Ring> const& v){
-    rtsacv<Ring> result(v.m() + 1);
-    result.at (0) = d;
-    for (std::size_t i = 1; i < v.m() + 1; ++i)
-        result.at(i) = v.at(i - 1);
-    return result;
-}
-
-template<typename Ring>
-rtsacv<Ring> operator/ (rtsacv<Ring> const& v, Ring const d) {
-    return 1. / d * v;
-}
-  
-template<typename Ring>
-bool operator== (rtsacv<Ring> const& v, std::initializer_list<Ring> const& l){
-    if (v.m() != l.size())
-        return false;
-    for (std::size_t i {0}; i < v.m(); ++i)
-        if (v.at (i) != * (l.first() + i))
-            return false;
-    return true;
 }
 
 HBRS_MPL_NAMESPACE_END

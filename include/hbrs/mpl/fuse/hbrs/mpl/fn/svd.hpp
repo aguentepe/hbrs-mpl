@@ -32,7 +32,6 @@
 #define GLOBAL_EPSILON std::numeric_limits<double>::epsilon() * 1000000
 
 HBRS_MPL_NAMESPACE_BEGIN
-namespace hana = boost::hana;
 namespace detail {
 
 /*
@@ -268,7 +267,7 @@ private:
 		storage_order Order
 	>
 	rtsam<Ring,Order>
-	GivensRotate(rtsacv<Ring> const& cs, rtsam<Ring,Order>& A, std::size_t const i, std::size_t const k) {
+	GivensRotate(std::array<Ring, 2> const& cs, rtsam<Ring,Order>& A, std::size_t const i, std::size_t const k) {
 		BOOST_ASSERT(i < A.m());
 		BOOST_ASSERT(k < A.m());
 		for (std::size_t j {0}; j <= A.n() - 1; ++j) {
@@ -297,7 +296,7 @@ private:
 		storage_order Order
 	>
 	rtsam<Ring,Order>
-	GivensRotate(rtsam<Ring,Order>& A, rtsacv<Ring> const& cs, std::size_t const i, std::size_t const k) {
+	GivensRotate(rtsam<Ring,Order>& A, std::array<Ring, 2> const& cs, std::size_t const i, std::size_t const k) {
 		BOOST_ASSERT(i < A.n());
 		BOOST_ASSERT(k < A.n());
 		for (std::size_t j {0}; j <= A.m() - 1; ++j) {
@@ -312,6 +311,6 @@ private:
 /* namespace detail */ }
 HBRS_MPL_NAMESPACE_END
 
-#define HBRS_MPL_FUSE_HBRS_MPL_FN_SVD_IMPLS boost::hana::make_tuple(                                             \
-		hbrs::mpl::detail::svd_impl{}                                                                       \
+#define HBRS_MPL_FUSE_HBRS_MPL_FN_SVD_IMPLS boost::hana::make_tuple(\
+		hbrs::mpl::detail::svd_impl{}\
 	)

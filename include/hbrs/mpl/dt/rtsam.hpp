@@ -30,19 +30,13 @@
 #include <hbrs/mpl/dt/range.hpp>
 #include <hbrs/mpl/dt/storage_order.hpp>
 #include <hbrs/mpl/dt/exception.hpp>
-#include <hbrs/mpl/fn/m.hpp>
-#include <hbrs/mpl/fn/n.hpp>
-#include <hbrs/mpl/fn/multiply.hpp>
-#include <hbrs/mpl/fn/minus.hpp>
-#include <hbrs/mpl/fn/equal.hpp>
 #include <hbrs/mpl/detail/translate_index.hpp>
-#include <hbrs/mpl/dt/exception.hpp>
+#include <vector>
 
 #include <boost/hana/core/make.hpp>
 #include <boost/hana/core/to.hpp>
 #include <boost/hana/type.hpp>
 #include <boost/assert.hpp>
-#include <vector>
 
 HBRS_MPL_NAMESPACE_BEGIN
 
@@ -65,15 +59,6 @@ struct rtsam {
 	
 	rtsam(std::size_t m, std::size_t n) : data_(m * n, Ring{0}), size_{m,n} {
 		BOOST_ASSERT(m * n >= 0);
-	}
-
-	rtsam(std::initializer_list<Ring> const& l, std::size_t const rows) : data_(l.size()), size_{rows, l.size() / rows} {
-		decltype(auto) begin{l.begin()};
-		for (std::size_t i{0}; i < size_.m(); ++i) {
-			for (std::size_t j{0}; j < size_.n(); ++j) {
-				at(make_matrix_index(i,j)) = *(begin + i * size_.n() + j);
-			}
-		}
 	}
 
     explicit rtsam(rtsacv<Ring> const& v) : data_ {v.m()}, size_{v.m(), 1} {
@@ -167,9 +152,9 @@ struct rtsam {
         return M;
     }
 	auto
-	operator()(rtsacv<std::size_t> const& rows, range<std::size_t,std::size_t> const& columns) const {
+	operator()(std::vector<std::size_t> const& rows, range<std::size_t,std::size_t> const& columns) const {
         std::size_t const cLength {columns.last() - columns.first() + 1};
-        rtsam<Ring,Order> M {rows.m(), cLength};
+        rtsam<Ring,Order> M {rows.size(), cLength};
         for (auto const& i : rows) {
             for (std::size_t k {0}; k < cLength; ++k) {
                 M.at(make_matrix_index(i, k)) = at(make_matrix_index(i, k + columns.first()));
@@ -178,9 +163,9 @@ struct rtsam {
         return M;
     }
 	auto
-	operator()(range<std::size_t,std::size_t> const& rows, rtsacv<std::size_t> const& columns) const {
+	operator()(range<std::size_t,std::size_t> const& rows, std::vector<std::size_t> const& columns) const {
         std::size_t const rLength {rows.last() - rows.first() + 1};
-        rtsam<Ring,Order> M {rLength, columns.m()};
+        rtsam<Ring,Order> M {rLength, columns.size()};
         for (std::size_t i {0}; i < rLength; ++i) {
             for (auto const k : columns) {
                 M.at(make_matrix_index(i, k)) = at(make_matrix_index(i + rows.first(), k));
@@ -250,7 +235,7 @@ template<
 	storage_order Order
 >
 void
-overwrite(rtsam<Ring,Order>& M1, rtsacv<std::size_t> const rows, range<std::size_t,std::size_t> const& columns, rtsam<Ring,Order> const& M2){
+overwrite(rtsam<Ring,Order>& M1, std::vector<std::size_t> const rows, range<std::size_t,std::size_t> const& columns, rtsam<Ring,Order> const& M2){
     for (auto const i : rows) {
         for (std::size_t j {columns.first()}; j <= columns.last(); ++j) {
             M1.at(make_matrix_index(i,j)) = M2.at(make_matrix_index(i, j - columns.first()));
@@ -263,7 +248,7 @@ template<
 	storage_order Order
 >
 void
-overwrite(rtsam<Ring,Order>& M1, range<std::size_t,std::size_t> const& rows, rtsacv<std::size_t> const columns, rtsam<Ring,Order> const& M2){
+overwrite(rtsam<Ring,Order>& M1, range<std::size_t,std::size_t> const& rows, std::vector<std::size_t> const columns, rtsam<Ring,Order> const& M2){
     for (std::size_t i {rows.first()}; i <= rows.last(); ++i) {
         for (auto const j : columns) {
             M1.at(make_matrix_index(i,j)) = M2.at(make_matrix_index(i - rows.first(), j));
@@ -286,87 +271,6 @@ identity(std::size_t const size) {
         result.at(make_matrix_index(i, i)) = 1;
     }
     return result;
-}
-
-template<
-	typename Ring,
-	storage_order Order
->
-rtsam<Ring,Order>
-operator* (rtsam<Ring,Order> const& M1, rtsam<Ring,Order> const& M2) {
-	return multiply(M1,M2);
-}
-
-template<
-	typename Ring,
-	storage_order Order
->
-rtsarv<Ring>
-operator* (rtsarv<Ring> const& v, rtsam<Ring,Order> const& M) {
-	return multiply(v,M);
-}
-
-template<
-	typename Ring,
-	storage_order Order
->
-rtsacv<Ring>
-operator* (rtsam<Ring,Order> const& M, rtsacv<Ring> const& v) {
-	return multiply(M,v);
-}
-
-template<
-	typename Ring,
-	storage_order Order
->
-rtsam<Ring,Order>
-operator* (rtsacv<Ring> const& v1, rtsarv<Ring> const& v2) {
-	return multiply(v1,v2);
-}
-
-template<
-	typename Ring,
-	storage_order Order
->
-rtsam<Ring,Order>
-operator* (rtsam<Ring,Order> M, Ring const& d) {
-	return multiply(M,d);
-}
-
-template<
-	typename Ring,
-	storage_order Order
->
-rtsam<Ring,Order>
-operator* (Ring const& d, rtsam<Ring,Order> M) {
-	return multiply(d,M);
-}
-
-template<
-	typename Ring,
-	storage_order Order
->
-rtsam<Ring,Order>
-operator- (rtsam<Ring,Order> const& M1, rtsam<Ring,Order> const& M2) {
-	return minus(M1,M2);
-}
-
-template<
-	typename Ring,
-	storage_order Order
->
-bool
-operator== (rtsam<Ring,Order> const& M1, rtsam<Ring,Order> const& M2) {
-	return equal(M1,M2);
-}
-
-template<
-	typename Ring,
-	storage_order Order
->
-bool
-operator== (rtsam<Ring,Order> const& M, const std::initializer_list< double >& l) {
-	return equal(M,l);
 }
 
 HBRS_MPL_NAMESPACE_END

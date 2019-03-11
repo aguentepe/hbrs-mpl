@@ -49,18 +49,6 @@ struct svd_result {
 	svd_result(U_ && u, S_ && s, V_ && v) 
 	: u_{HBRS_MPL_FWD(u)}, s_{HBRS_MPL_FWD(s)}, v_{HBRS_MPL_FWD(v)}
 	{}
-
-	template<
-		/* typename BR, */
-		typename U_, typename S_, typename V_
-		/* typename std::enable_if_t<std::is_same_v<BR, bidiag_result<U_,S_,V_>>, int> = 0 */
-	>
-	constexpr 
-	/* svd_result(BR && br) */ 
-	svd_result(bidiag_result<U_,S_,V_> && br) 
-	: u_{br.u()}, s_{br.b()}, v_{br.v()}
-	/* : u_{HBRS_MPL_FWD(HBRS_MPL_FWD(br).u())}, s_{HBRS_MPL_FWD(HBRS_MPL_FWD(br).b())}, v_{HBRS_MPL_FWD(HBRS_MPL_FWD(br).v())} */
-	{}
 	
 	constexpr 
 	svd_result(svd_result const&) = default;

@@ -36,6 +36,8 @@
 #include <hbrs/mpl/fwd/dt/scv.hpp>
 #include <hbrs/mpl/fwd/dt/ctsam.hpp>
 #include <hbrs/mpl/fwd/dt/rtsam.hpp>
+#include <hbrs/mpl/fwd/dt/rtsacv.hpp>
+#include <hbrs/mpl/fwd/dt/rtsarv.hpp>
 #include <hbrs/mpl/fwd/dt/zas.hpp>
 #include <boost/hana/tuple.hpp>
 
@@ -57,6 +59,8 @@ HBRS_MPL_DEF_FO_TRY_METHOD(size_impl_srv,      srv_tag,      size)
 HBRS_MPL_DEF_FO_TRY_METHOD(size_impl_scv,      scv_tag,      size)
 HBRS_MPL_DEF_FO_TRY_METHOD(size_impl_ctsam,    ctsam_tag,    size)
 HBRS_MPL_DEF_FO_TRY_METHOD(size_impl_rtsam,    rtsam_tag,    size)
+HBRS_MPL_DEF_FO_TRY_METHOD(size_impl_rtsacv,   rtsacv_tag,   size)
+HBRS_MPL_DEF_FO_TRY_METHOD(size_impl_rtsarv,   rtsarv_tag,   size)
 HBRS_MPL_DEF_FO_TRY_METHOD(size_impl_zas,      zas_tag,      length)
 
 /* namespace detail */ }
@@ -77,6 +81,8 @@ HBRS_MPL_NAMESPACE_END
 		hbrs::mpl::detail::size_impl_scv{},                                                                            \
 		hbrs::mpl::detail::size_impl_ctsam{},                                                                          \
 		hbrs::mpl::detail::size_impl_rtsam{},                                                                          \
+		hbrs::mpl::detail::size_impl_rtsacv{},                                                                         \
+		hbrs::mpl::detail::size_impl_rtsarv{},                                                                         \
 		hbrs::mpl::detail::size_impl_zas{}                                                                             \
 	)
 

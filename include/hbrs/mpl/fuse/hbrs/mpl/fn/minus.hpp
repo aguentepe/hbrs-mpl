@@ -28,6 +28,18 @@ HBRS_MPL_NAMESPACE_BEGIN
 namespace hana = boost::hana;
 namespace detail {
 
+template<
+	typename T1,
+	typename T2,
+	typename std::enable_if_t<
+		std::is_same_v< hana::tag_of_t<T1>, rtsam_tag > && std::is_same_v< hana::tag_of_t<T2>, rtsam_tag >
+	>* = nullptr
+>
+decltype(auto)
+operator-(T1 && t1, T2 && t2) {
+	return minus(HBRS_MPL_FWD(t1), HBRS_MPL_FWD(t2));
+}
+
 struct minus_impl_rtsam {
 	template<
 		typename Ring,

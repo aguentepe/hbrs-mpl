@@ -22,6 +22,9 @@
 
 #include <hbrs/mpl/fn/bidiag.hpp>
 #include <hbrs/mpl/fn/equal.hpp>
+#include <hbrs/mpl/fn/multiply.hpp>
+#include <hbrs/mpl/dt/storage_order.hpp>
+#include <hbrs/mpl/dt/rtsam.hpp>
 
 BOOST_AUTO_TEST_SUITE(bidiag_test)
 
@@ -50,17 +53,17 @@ BOOST_AUTO_TEST_CASE(bidiag_test1) {
         A.at(make_matrix_index(3, 3)) = 1;
         
         rtsam<double, storage_order::row_major> A2 {
-			{ 2,  2,3,
-              9,  8,1,
-             15,100,7,
-			 99,  1,2,
-			  5,  7,3},5};
+			{ 2,  2,  3,
+              9,  8,  1,
+             15,100,  7,
+			 99,  1,  2,
+			  5,  7,  3}, make_matrix_size(5,3)};
 
-        auto B {bidiag(A,0)};
+        auto B  {bidiag(A,0)};
         auto B2 {bidiag(A,0)};
         auto B3 {bidiag(A2,0)};
 
-        auto C { B.u() * B.b() * transpose(B.v()) };
+        auto C  {  B.u() *  B.b() * transpose( B.v()) };
         auto C2 { B2.u() * B2.b() * transpose(B2.v()) };
         auto C3 { B3.u() * B3.b() * transpose(B3.v()) };
         

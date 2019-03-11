@@ -24,15 +24,11 @@
 #include <hbrs/mpl/preprocessor/core.hpp>
 #include <hbrs/mpl/dt/rtsacv.hpp>
 #include <hbrs/mpl/dt/range.hpp>
-#include <hbrs/mpl/fn/m.hpp>
-#include <hbrs/mpl/fn/n.hpp>
-/* #include <hbrs/mpl/fn/multiply.hpp> */
+#include <vector>
 
 #include <boost/hana/core/make.hpp>
 #include <boost/hana/core/to.hpp>
 #include <boost/hana/type.hpp>
-#include <boost/assert.hpp>
-#include <vector>
 
 HBRS_MPL_NAMESPACE_BEGIN
 
@@ -42,8 +38,6 @@ struct rtsarv {
 	
 	explicit rtsarv(std::size_t size) : vector_(size) {}
 
-	explicit rtsarv(std::initializer_list<Ring> const& l) : vector_(l) {}
-	
 	rtsarv(rtsarv const&) = default;
 	rtsarv(rtsarv &&) = default;
 	
@@ -84,7 +78,7 @@ struct rtsarv {
 	
 	auto
 	operator() (range<std::size_t,std::size_t> const& r) const {
-		return vector_(r);
+		return rtsarv{vector_(r)};
 	}
 
 private:
@@ -99,13 +93,6 @@ operator<< (std::ostream& os, rtsarv<Ring> const& v) {
         os << v.at(i) << "\t";
     os << std::endl;
     return os << '-' << std::endl;
-}
-
-template<typename Ring>
-Ring
-operator* (rtsarv<Ring> const& v1, rtsacv<Ring> const& v2) {
-	/* return multiply(v1,v2); */
-	return 0.;
 }
 
 HBRS_MPL_NAMESPACE_END

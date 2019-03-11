@@ -96,10 +96,10 @@ HBRS_MPL_NAMESPACE_END
 
 #define HBRS_MPL_FUSE_HBRS_MPL_FN_TRANSPOSE_IMPLS boost::hana::make_tuple(                                             \
 		hbrs::mpl::detail::transpose_impl_srv{},                                                                       \
-		hbrs::mpl::detail::transpose_impl_scv{},                                                                        \
-		hbrs::mpl::detail::transpose_impl_rtsam{},\
-		hbrs::mpl::detail::transpose_impl_rtsacv{},\
-		hbrs::mpl::detail::transpose_impl_rtsarv{}\
+		hbrs::mpl::detail::transpose_impl_scv{},                                                                       \
+		hbrs::mpl::detail::transpose_impl_rtsam{},                                                                     \
+		hbrs::mpl::detail::transpose_impl_rtsacv{},                                                                    \
+		hbrs::mpl::detail::transpose_impl_rtsarv{}                                                                     \
 	)
 
 #endif // !HBRS_MPL_FUSE_HBRS_MPL_FN_TRANSPOSE_HPP

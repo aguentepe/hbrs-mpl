@@ -18,9 +18,9 @@
 
 #include <hbrs/mpl/config.hpp>
 #include <hbrs/mpl/preprocessor/core.hpp>
-#include <hbrs/mpl/dt/rtsacv.hpp>
 #include <hbrs/mpl/fn/givens.hpp>
 #include <cmath>
+#include <array>
 
 HBRS_MPL_NAMESPACE_BEGIN
 namespace hana = boost::hana;
@@ -39,31 +39,31 @@ namespace detail {
  * Return a vector that contains c and s with c on index 0 and s on index 1
  */
 struct givens_impl {
-        /* template <typename Ring> */
-        /* constexpr */
-        decltype(auto)
-        operator()(double const a, double const b) const {
-                rtsacv<double> cs(2);
-                if (b == 0) {
-                        cs.at(0) = 1;
-                        cs.at(1) = 0;
-                } else {
-                        if (std::abs(b) > std::abs(a)) {
-                                auto const tau = -a / b;
-                                cs.at(1) = 1 / std::sqrt(1 + tau * tau);
-                                cs.at(0) = cs.at(1) * tau;
-                        } else {
-                                auto const tau = -b / a;
-                                cs.at(0) = 1 / std::sqrt(1 + tau * tau);
-                                cs.at(1) = cs.at(0) * tau;
-                        }
-                }
-                return cs;
-        }
+	/* template <typename Ring> */
+	/* constexpr */
+	decltype(auto)
+	operator()(double const a, double const b) const {
+		std::array<double, 2> cs;
+		if (b == 0) {
+			cs.at(0) = 1;
+			cs.at(1) = 0;
+		} else {
+			if (std::abs(b) > std::abs(a)) {
+				auto const tau = -a / b;
+				cs.at(1) = 1 / std::sqrt(1 + tau * tau);
+				cs.at(0) = cs.at(1) * tau;
+			} else {
+				auto const tau = -b / a;
+				cs.at(0) = 1 / std::sqrt(1 + tau * tau);
+				cs.at(1) = cs.at(0) * tau;
+			}
+		}
+		return cs;
+	}
 };
 /* namespace detail */ }
 HBRS_MPL_NAMESPACE_END
 
-#define HBRS_MPL_FUSE_HBRS_MPL_FN_GIVENS_IMPLS boost::hana::make_tuple(                                             \
-		hbrs::mpl::detail::givens_impl{}                                                                       \
+#define HBRS_MPL_FUSE_HBRS_MPL_FN_GIVENS_IMPLS boost::hana::make_tuple(\
+		hbrs::mpl::detail::givens_impl{}\
 	)

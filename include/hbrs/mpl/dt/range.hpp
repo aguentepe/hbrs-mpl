@@ -24,7 +24,7 @@
 
 HBRS_MPL_DEFINE_AXIS_2D(range, Range, first, First, last, Last)
 
-#include <hbrs/mpl/fn/equal.hpp>
+/* #include <hbrs/mpl/fn/equal.hpp> */
 #include <hbrs/mpl/fn/and.hpp>
 #include <hbrs/mpl/fn/not.hpp>
 HBRS_MPL_DEFINE_AXIS_2D_EQUALITY_OPERATORS(range, Range, first, First, last, Last)
