@@ -31,6 +31,7 @@
 #include <hbrs/mpl/fn/minus.hpp>
 #include <hbrs/mpl/fn/multiply.hpp>
 #include <hbrs/mpl/fn/transpose.hpp>
+#include <hbrs/mpl/fn/select.hpp>
 #include <cmath>
 
 HBRS_MPL_NAMESPACE_BEGIN
@@ -127,12 +128,29 @@ struct bidiag_impl_householder {
 		}
 		return result;
 	}
+private:
+	// returns a square Identity Matrix with size amount of rows and columns
+	template<
+		typename Ring,
+		storage_order Order
+	>
+	rtsam<Ring,Order>
+	identity(std::size_t const size) {
+		rtsam<Ring,Order> result {size, size};
+		for (std::size_t i {0}; i < size; ++i) {
+			for (std::size_t j {0}; j < size; ++j) {
+				result.at(make_matrix_index(i, j)) = 0;
+			}
+			result.at(make_matrix_index(i, i)) = 1;
+		}
+		return result;
+	}
 };
 /* namespace detail */ }
 HBRS_MPL_NAMESPACE_END
 
-#define HBRS_MPL_FUSE_HBRS_MPL_FN_BIDIAG_IMPLS boost::hana::make_tuple(                                             \
-		hbrs::mpl::detail::bidiag_impl_householder{}                                                                       \
+#define HBRS_MPL_FUSE_HBRS_MPL_FN_BIDIAG_IMPLS boost::hana::make_tuple(                                                \
+		hbrs::mpl::detail::bidiag_impl_householder{}                                                                   \
 	)
 
 #endif // !HBRS_MPL_FUSE_HBRS_MPL_FN_BIDIAG_HPP

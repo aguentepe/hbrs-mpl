@@ -61,12 +61,9 @@ struct rtsam {
 		BOOST_ASSERT(m * n >= 0);
 	}
 
-    explicit rtsam(rtsacv<Ring> const& v) : data_ {v.m()}, size_{v.m(), 1} {
-        std::copy(v.vector().begin(), v.vector().end(), data_.begin());
-    }
-    explicit rtsam(rtsarv<Ring> const& v) : data_ {v.n()}, size_{1, v.n()} {
-        std::copy(v.vector().begin(), v.vector().end(), data_.begin());
-    }
+    explicit rtsam(rtsacv<Ring> const& v) : data_ {v.data()}, size_{v.m(), 1} {}
+
+    explicit rtsam(rtsarv<Ring> const& v) : data_ {v.data()}, size_{1, v.n()} {}
 	
 	rtsam(rtsam const&) = default;
 	rtsam(rtsam &&) = default;
@@ -119,39 +116,13 @@ struct rtsam {
 	operator[](Index && i) && { return make_smr(std::move(*this), HBRS_MPL_FWD(i)); }
 	
     // Several operator() functions to return submatrices.
-	auto
-	operator()(range<std::size_t,std::size_t> const& rows, std::size_t const column) const {
-        std::size_t const length {rows.last() - rows.first() + 1};
-        rtsacv<Ring> v(length);
-        for (std::size_t i {0}; i < length; ++i) {
-            v.at(i) = at(make_matrix_index(i + rows.first(), column));
-        }
-        return v;
-    }
-	auto
-	operator()(std::size_t const& row, range<std::size_t,std::size_t> const& columns) const {
-        std::size_t const length {columns.last() - columns.first() + 1};
-        rtsarv<Ring> v(length);
-        for (std::size_t i {0}; i < length; ++i) {
-            v.at(i) = at(make_matrix_index(row, i + columns.first()));
-        }
-        return v;
-    }
-	auto
-	operator()(range<std::size_t,std::size_t> const& rows, range<std::size_t,std::size_t> const& columns) const {
-        BOOST_ASSERT(rows.last()    < size_.m());
-        BOOST_ASSERT(columns.last() < size_.n());
-        std::size_t const rLength {rows.last() - rows.first() + 1};
-        std::size_t const cLength {columns.last() - columns.first() + 1};
-        rtsam<Ring,Order> M {rLength, cLength};
-        for (std::size_t i {0}; i < rLength; ++i) {
-            for (std::size_t k {0}; k < cLength; ++k) {
-                M.at(make_matrix_index(i, k)) = at(make_matrix_index(i + rows.first(), k + columns.first()));
-            }
-        }
-        return M;
-    }
-	auto
+	decltype(auto)
+	operator()(range<std::size_t,std::size_t> const& rows, std::size_t const column) const;
+	decltype(auto)
+	operator()(std::size_t const& row, range<std::size_t,std::size_t> const& columns) const;
+	decltype(auto)
+	operator()(range<std::size_t,std::size_t> const& rows, range<std::size_t,std::size_t> const& columns);
+	decltype(auto)
 	operator()(std::vector<std::size_t> const& rows, range<std::size_t,std::size_t> const& columns) const {
         std::size_t const cLength {columns.last() - columns.first() + 1};
         rtsam<Ring,Order> M {rows.size(), cLength};
@@ -162,7 +133,7 @@ struct rtsam {
         }
         return M;
     }
-	auto
+	decltype(auto)
 	operator()(range<std::size_t,std::size_t> const& rows, std::vector<std::size_t> const& columns) const {
         std::size_t const rLength {rows.last() - rows.first() + 1};
         rtsam<Ring,Order> M {rLength, columns.size()};
@@ -173,7 +144,6 @@ struct rtsam {
         }
         return M;
     }
-
 private:
 	std::vector<Ring> data_;
 	matrix_size<std::size_t, std::size_t> size_;
@@ -195,18 +165,18 @@ operator<< (std::ostream& os, rtsam<Ring,Order> const& M) {
 }
 
 // overwrites rows and columns of M1 with M2
-template<
-	typename Ring,
-	storage_order Order
->
-void
-overwrite(rtsam<Ring,Order>& M1, range<std::size_t,std::size_t> const& rows, range<std::size_t,std::size_t> const& columns, rtsam<Ring,Order> const& M2) {
-    for (std::size_t i {rows.first()}; i <= rows.last(); ++i) {
-        for (std::size_t j {columns.first()}; j <= columns.last(); ++j) {
-            M1.at(make_matrix_index(i,j)) = M2.at(make_matrix_index(i - rows.first(), j - columns.first()));
-        }
-    }
-}
+/* template< */
+/* 	typename Ring, */
+/* 	storage_order Order */
+/* > */
+/* void */
+/* overwrite(rtsam<Ring,Order>& M1, range<std::size_t,std::size_t> const& rows, range<std::size_t,std::size_t> const& columns, rtsam<Ring,Order> const& M2) { */
+/*     for (std::size_t i {rows.first()}; i <= rows.last(); ++i) { */
+/*         for (std::size_t j {columns.first()}; j <= columns.last(); ++j) { */
+/*             M1.at(make_matrix_index(i,j)) = M2.at(make_matrix_index(i - rows.first(), j - columns.first())); */
+/*         } */
+/*     } */
+/* } */
 
 template<
 	typename Ring,
@@ -254,23 +224,6 @@ overwrite(rtsam<Ring,Order>& M1, range<std::size_t,std::size_t> const& rows, std
             M1.at(make_matrix_index(i,j)) = M2.at(make_matrix_index(i - rows.first(), j));
         }
     }
-}
-
-// returns a square Identity Matrix with size amount of rows and columns
-template<
-	typename Ring,
-	storage_order Order
->
-rtsam<Ring,Order>
-identity(std::size_t const size) {
-    rtsam<Ring,Order> result {size, size};
-    for (std::size_t i {0}; i < size; ++i) {
-        for (std::size_t j {0}; j < size; ++j) {
-            result.at(make_matrix_index(i, j)) = 0;
-        }
-        result.at(make_matrix_index(i, i)) = 1;
-    }
-    return result;
 }
 
 HBRS_MPL_NAMESPACE_END

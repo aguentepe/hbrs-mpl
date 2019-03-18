@@ -64,8 +64,8 @@ struct minus_impl_rtsam {
 /* namespace detail */ }
 HBRS_MPL_NAMESPACE_END
 
-#define HBRS_MPL_FUSE_HBRS_MPL_FN_MINUS_IMPLS boost::hana::make_tuple(\
-		hbrs::mpl::detail::minus_impl_rtsam{}\
+#define HBRS_MPL_FUSE_HBRS_MPL_FN_MINUS_IMPLS boost::hana::make_tuple(                                                 \
+		hbrs::mpl::detail::minus_impl_rtsam{}                                                                          \
 	)
 
 #endif // !HBRS_MPL_FUSE_HBRS_MPL_FN_MINUS_HPP

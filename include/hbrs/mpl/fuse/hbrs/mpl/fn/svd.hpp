@@ -27,9 +27,9 @@
 #include <hbrs/mpl/fn/svd.hpp>
 #include <hbrs/mpl/fn/bidiag.hpp>
 #include <hbrs/mpl/fn/givens.hpp>
+#include <hbrs/mpl/fn/almost_equal.hpp>
+#include <hbrs/mpl/fn/select.hpp>
 #include <cmath>
-
-#define GLOBAL_EPSILON std::numeric_limits<double>::epsilon() * 1000000
 
 HBRS_MPL_NAMESPACE_BEGIN
 namespace detail {
@@ -72,7 +72,7 @@ struct svd_impl {
 		std::size_t p {0};
 		while (q != n) {
 			for (std::size_t i {0}; i < n - 1; ++i) {
-				if (std::abs(B.at(make_matrix_index(i, i + 1))) < GLOBAL_EPSILON) { // FIXME use a proper epsilon
+				if (almost_zero(B.at(make_matrix_index(i, i + 1)))) {
 					B.at(make_matrix_index(i, i + 1)) = 0;
 				}
 			}
@@ -271,8 +271,8 @@ private:
 		BOOST_ASSERT(i < A.m());
 		BOOST_ASSERT(k < A.m());
 		for (std::size_t j {0}; j <= A.n() - 1; ++j) {
-			double const tau1 {A.at(make_matrix_index(i, j)) };
-			double const tau2 {A.at(make_matrix_index(k, j)) };
+			double const tau1 {A.at(make_matrix_index(i, j))};
+			double const tau2 {A.at(make_matrix_index(k, j))};
 			A.at(make_matrix_index(i, j)) = cs.at(0) * tau1 - cs.at(1) * tau2;
 			A.at(make_matrix_index(k, j)) = cs.at(1) * tau1 + cs.at(0) * tau2;
 		}
@@ -300,8 +300,8 @@ private:
 		BOOST_ASSERT(i < A.n());
 		BOOST_ASSERT(k < A.n());
 		for (std::size_t j {0}; j <= A.m() - 1; ++j) {
-			double const tau1 {A.at(make_matrix_index(j, i)) };
-			double const tau2 {A.at(make_matrix_index(j, k)) };
+			double const tau1 {A.at(make_matrix_index(j, i))};
+			double const tau2 {A.at(make_matrix_index(j, k))};
 			A.at(make_matrix_index(j, i)) = cs.at(0) * tau1 - cs.at(1) * tau2;
 			A.at(make_matrix_index(j, k)) = cs.at(1) * tau1 + cs.at(0) * tau2;
 		}
@@ -311,6 +311,6 @@ private:
 /* namespace detail */ }
 HBRS_MPL_NAMESPACE_END
 
-#define HBRS_MPL_FUSE_HBRS_MPL_FN_SVD_IMPLS boost::hana::make_tuple(\
-		hbrs::mpl::detail::svd_impl{}\
+#define HBRS_MPL_FUSE_HBRS_MPL_FN_SVD_IMPLS boost::hana::make_tuple(                                                   \
+		hbrs::mpl::detail::svd_impl{}                                                                                  \
 	)

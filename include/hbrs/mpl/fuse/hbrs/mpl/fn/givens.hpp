@@ -64,6 +64,6 @@ struct givens_impl {
 /* namespace detail */ }
 HBRS_MPL_NAMESPACE_END
 
-#define HBRS_MPL_FUSE_HBRS_MPL_FN_GIVENS_IMPLS boost::hana::make_tuple(\
-		hbrs::mpl::detail::givens_impl{}\
+#define HBRS_MPL_FUSE_HBRS_MPL_FN_GIVENS_IMPLS boost::hana::make_tuple(                                                \
+		hbrs::mpl::detail::givens_impl{}                                                                               \
 	)

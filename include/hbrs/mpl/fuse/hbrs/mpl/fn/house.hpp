@@ -44,7 +44,7 @@ struct house_impl {
 	/* constexpr */ 
 	decltype(auto)
 	operator()(rtsacv<Ring> const& x) {
-		auto const m {x.m()}; // copy for readability
+		auto const m {x.size()}; // copy for readability
 
 		/* x2m is a temporary which is written x(2:m) in the book and is equivalent to x(range(1,m-1)) in this code */
 		auto const x2m {x(range<std::size_t,std::size_t>(std::size_t{1}, m-1))};
@@ -80,8 +80,8 @@ struct house_impl {
 /* namespace detail */ }
 HBRS_MPL_NAMESPACE_END
 
-#define HBRS_MPL_FUSE_HBRS_MPL_FN_HOUSE_IMPLS boost::hana::make_tuple(\
-		hbrs::mpl::detail::house_impl{}\
+#define HBRS_MPL_FUSE_HBRS_MPL_FN_HOUSE_IMPLS boost::hana::make_tuple(                                                 \
+		hbrs::mpl::detail::house_impl{}                                                                                \
 	)
 
 #endif // !HBRS_MPL_FUSE_HBRS_MPL_FN_HOUSE_HPP

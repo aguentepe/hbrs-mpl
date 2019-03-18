@@ -24,9 +24,11 @@
 #include <hbrs/mpl/dt/rtsacv.hpp>
 #include <hbrs/mpl/dt/rtsarv.hpp>
 #include <hbrs/mpl/dt/rtsam.hpp>
+#include <hbrs/mpl/dt/ssm.hpp>
 #include <hbrs/mpl/dt/range.hpp>
 #include <hbrs/mpl/fn/transpose.hpp>
 #include <cmath>
+#include <typeinfo>
 
 HBRS_MPL_NAMESPACE_BEGIN
 namespace hana = boost::hana;
@@ -55,9 +57,11 @@ template<
 	typename std::enable_if_t<
 		std::is_same_v< hana::tag_of_t<T1>, rtsam_tag  > && std::is_same_v< hana::tag_of_t<T2>, rtsam_tag  > ||
 		std::is_same_v< hana::tag_of_t<T1>, rtsam_tag  > && std::is_same_v< hana::tag_of_t<T2>, rtsacv_tag > ||
+		std::is_same_v< hana::tag_of_t<T1>, rtsam_tag  > && std::is_same_v< hana::tag_of_t<T2>, ssm_tag    > ||
 		std::is_same_v< hana::tag_of_t<T1>, rtsacv_tag > && std::is_same_v< hana::tag_of_t<T2>, rtsarv_tag > ||
 		std::is_same_v< hana::tag_of_t<T1>, rtsarv_tag > && std::is_same_v< hana::tag_of_t<T2>, rtsam_tag  > ||
-		std::is_same_v< hana::tag_of_t<T1>, rtsarv_tag > && std::is_same_v< hana::tag_of_t<T2>, rtsacv_tag >
+		std::is_same_v< hana::tag_of_t<T1>, rtsarv_tag > && std::is_same_v< hana::tag_of_t<T2>, rtsacv_tag > ||
+		std::is_same_v< hana::tag_of_t<T1>, rtsarv_tag > && std::is_same_v< hana::tag_of_t<T2>, ssm_tag >
 	>* = nullptr
 >
 decltype(auto)
@@ -73,7 +77,7 @@ struct multiply_impl_rtsarv_rtsacv {
 	decltype(auto)
 	operator()(rtsarv<Ring> const& v1, rtsacv<Ring> const& v2) const {
 		Ring sum {0};
-		for (std::size_t i {0}; i < v1.n(); ++i)
+		for (std::size_t i {0}; i < v1.size(); ++i)
 			sum += v1.at(i) * v2.at(i);
 		return sum;
 	}
@@ -81,15 +85,19 @@ struct multiply_impl_rtsarv_rtsacv {
 
 struct multiply_impl_rtsam_rtsam {
 	template<
-		typename Ring,
-		storage_order Order
+		typename Matrix1,
+		typename Matrix2,
+		typename std::enable_if_t<
+			(std::is_same_v< hana::tag_of_t<Matrix1>, rtsam_tag > || std::is_same_v< hana::tag_of_t<Matrix1>, ssm_tag >) &&
+			(std::is_same_v< hana::tag_of_t<Matrix2>, rtsam_tag > || std::is_same_v< hana::tag_of_t<Matrix2>, ssm_tag >)
+		>* = nullptr
 	>
 	/* constexpr */ 
 	decltype(auto)
-	operator()(rtsam<Ring,Order> const& M1, rtsam<Ring,Order> const& M2) const {
+	operator()(Matrix1 const& M1, Matrix2 const& M2) const {
 		BOOST_ASSERT(M1.n() == M2.m());
 
-		rtsam<Ring,Order> result {M1.m(), M2.n()};
+		rtsam<decltype(M1.at(make_matrix_index(0,0))), storage_order::row_major> result {M1.m(), M2.n()};
 		for (std::size_t i {0}; i < result.m(); ++i) {
 			for (std::size_t j {0}; j < result.n(); ++j) {
 				result.at(make_matrix_index(i, j)) = M1(i, range<std::size_t,std::size_t>(std::size_t{0}, M1.n() - 1)) * M2(range<std::size_t,std::size_t>(std::size_t{0}, M2.m() - 1), j);
@@ -102,15 +110,16 @@ struct multiply_impl_rtsam_rtsam {
 struct multiply_impl_rtsarv_rtsam {
 	template<
 		typename Ring,
-		storage_order Order
+		typename Matrix,
+		typename std::enable_if_t< std::is_same_v< hana::tag_of_t<Matrix>, rtsam_tag > || std::is_same_v< hana::tag_of_t<Matrix>, ssm_tag > >* = nullptr
 	>
 	/* constexpr */ 
 	decltype(auto)
-	operator()(rtsarv<Ring> const& v, rtsam<Ring,Order> const& M) const {
-		BOOST_ASSERT(v.n() == M.m());
+	operator()(rtsarv<Ring> const& v, Matrix const& M) const {
+		BOOST_ASSERT(v.size() == M.m());
 
 		rtsarv<Ring> result(M.n());
-		for (std::size_t i {0}; i < result.n(); ++i) {
+		for (std::size_t i {0}; i < result.size(); ++i) {
 			result.at(i) = v * M(range<std::size_t,std::size_t>(std::size_t{0}, M.m() - 1), i);
 		}
 		return result;
@@ -125,10 +134,10 @@ struct multiply_impl_rtsam_rtsacv {
 	/* constexpr */ 
 	decltype(auto)
 	operator()(rtsam<Ring,Order> const& M, rtsacv<Ring> const& v) const {
-		BOOST_ASSERT(M.n() == v.m());
+		BOOST_ASSERT(M.n() == v.size());
 
 		rtsacv<Ring> result(M.m());
-		for (std::size_t i {0}; i < result.m(); ++i) {
+		for (std::size_t i {0}; i < result.size(); ++i) {
 			result.at(i) = M(i, range<std::size_t,std::size_t>(std::size_t{0}, M.n() - 1)) * v;
 		}
 		return result;
@@ -140,7 +149,7 @@ struct multiply_impl_rtsacv_rtsarv {
 	/* constexpr */ 
 	decltype(auto)
 	operator()(rtsacv<Ring> const& v1, rtsarv<Ring> const& v2) const {
-		rtsam<Ring,storage_order::row_major> result {v1.m(), v2.n()};
+		rtsam<Ring,storage_order::row_major> result {v1.size(), v2.size()};
 		for (std::size_t i {0}; i < result.m(); ++i) {
 			for (std::size_t j {0}; j < result.n(); ++j) {
 				result.at(make_matrix_index(i, j)) = v1.at(i) * v2.at(j);
@@ -184,7 +193,7 @@ struct multiply_impl_rtsacv_ring {
 	/* constexpr */ 
 	decltype(auto)
 	operator()(rtsacv<Ring> v, Ring const& s) const {
-		for (std::size_t i {0}; i < v.m(); ++i)
+		for (std::size_t i {0}; i < v.size(); ++i)
 			v.at(i) *= s;
 		return v;
 	}

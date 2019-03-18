@@ -50,43 +50,30 @@ struct rtsacv {
 	rtsacv&
 	operator=(rtsacv &&) = default;
 	
-	auto const
+	auto
 	size() const {
 		return data_.size();
 	}
 
 	decltype(auto)
-	vector() const {
+	data() const {
 		return data_;
 	}
 
-	auto
-	m() const {
-		return data_.size();
-	}
-
-	template<
-		typename Index,
-		typename std::enable_if_t<std::is_integral_v<typename std::decay_t<Index>>>* = nullptr
-	>
 	decltype(auto)
-	at(Index && i) {
-		return data_[HBRS_MPL_FWD(i)];
+	at(std::size_t const& i) {
+		return data_[i];
 	}
 	
-	template<
-		typename Index,
-		typename std::enable_if_t<std::is_integral_v<typename std::decay_t<Index>>>* = nullptr
-	>
 	decltype(auto)
-	at(Index && i) const {
-		return data_[HBRS_MPL_FWD(i)];
+	at(std::size_t const& i) const {
+		return data_[i];
 	}
 
 	auto
 	operator() (range<std::size_t,std::size_t> const& r) const {
 		rtsacv v (r.last() - r.first() + 1);
-		for (std::size_t i = 0; i < v.m(); ++i) {
+		for (std::size_t i = 0; i < v.size(); ++i) {
 			v.at(i) = at(i + r.first());
 		}
 		return v;
@@ -99,7 +86,7 @@ private:
 template<typename Ring>
 std::ostream& operator<< (std::ostream& os, rtsacv<Ring> const& v) {
     os << '-' << std::endl;
-    for (std::size_t i {0}; i < v.m(); ++i)
+    for (std::size_t i {0}; i < v.size(); ++i)
         os << v.at(i) << std::endl;
     return os << '-' << std::endl;
 }

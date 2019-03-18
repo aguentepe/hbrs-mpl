@@ -52,18 +52,13 @@ struct rtsarv {
 	}
 
 	decltype(auto)
-	vector() const {
+	data() const {
 		return vector_;
 	}
 
 	decltype(auto)
 	transpose() const {
 		return vector_;
-	}
-
-	auto
-	n() const {
-		return vector_.size();
 	}
 
 	decltype(auto)
