@@ -27,25 +27,21 @@
  * https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
  */
 
-union dawson_double {
-	dawson_double(double d = 0.) : d(d) {}
-
-	bool
-	negative() const {
-		return l < 0;
-	}
-
-	double d;
-	long l;
-};
-
 inline
 bool
 almost_equal(double const a, double const b, int const max_ulps = 10) {
-	dawson_double ua{a};
-	dawson_double ub{b};
+	union {
+		double ad;
+		long   al;
+	};
+	union {
+		double bd;
+		long   bl;
+	};
+	ad = a;
+	bd = b;
 
-	if (ua.negative() != ub.negative()) {
+	if ((al < 0) != (bl < 0)) {
 		if (a == b) {
 			return true;
 		} else {
@@ -53,7 +49,7 @@ almost_equal(double const a, double const b, int const max_ulps = 10) {
 		}
 	}
 
-	auto ulps_diff{std::abs(ua.l - ub.l)};
+	auto ulps_diff{std::abs(al - bl)};
 	
 	if (ulps_diff <= max_ulps) {
 		return true;
