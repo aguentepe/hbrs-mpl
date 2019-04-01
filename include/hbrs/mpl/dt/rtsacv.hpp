@@ -40,8 +40,6 @@ struct rtsacv {
 		BOOST_ASSERT(size >= 0);
 	}
 
-	explicit rtsacv(std::initializer_list<Ring> const& l);
-	
 	rtsacv(rtsacv const&) = default;
 	rtsacv(rtsacv &&) = default;
 	
