@@ -59,17 +59,17 @@ BOOST_AUTO_TEST_CASE(bidiag_test1) {
 			 99,  1,  2,
 			  5,  7,  3}, make_matrix_size(5,3)};
 
-        auto B  {bidiag(A,0)};
-        auto B2 {bidiag(A,0)};
+        auto B  {bidiag(A ,0)};
+        auto B2 {bidiag(A ,0)};
         auto B3 {bidiag(A2,0)};
 
         auto C  {  B.u() *  B.b() * transpose( B.v()) };
         auto C2 { B2.u() * B2.b() * transpose(B2.v()) };
         auto C3 { B3.u() * B3.b() * transpose(B3.v()) };
         
-        BOOST_TEST(C == A);
-        BOOST_TEST(C2 == A);
-        BOOST_TEST(C3 == A2);
+        BOOST_TEST( C  == A  );
+        BOOST_TEST( C2 == A  );
+        BOOST_TEST( C3 == A2 );
 }
 
 BOOST_AUTO_TEST_SUITE_END()
