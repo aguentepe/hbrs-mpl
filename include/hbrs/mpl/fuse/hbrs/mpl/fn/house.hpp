@@ -52,7 +52,7 @@ struct house_impl {
 
 		/* The vector ni is the vector x with the value 1 in its first row */
 		auto result{make_house_result(x, 0.)};
-		auto& ni{result.ni()};
+		auto& ni  {result.ni  ()};
 		auto& beta{result.beta()};
 
 		ni.at(0) = 1;
