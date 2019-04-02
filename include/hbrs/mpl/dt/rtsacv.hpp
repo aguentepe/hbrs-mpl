@@ -36,7 +36,7 @@ template<typename /* type of vector entries */ Ring>
 struct rtsacv {
 	explicit rtsacv(std::vector<Ring> data) : data_{data} {}
 	
-	explicit rtsacv(std::size_t size) : data_(size, Ring{0}) {
+	rtsacv(std::size_t size) : data_(size, Ring{0}) {
 		BOOST_ASSERT(size >= 0);
 	}
 
@@ -53,25 +53,25 @@ struct rtsacv {
 		return data_.size();
 	}
 
-	decltype(auto)
-	data() const {
-		return data_;
-	}
+	/* decltype(auto) */
+	/* data() const { */
+	/* 	return data_; */
+	/* } */
 
 	decltype(auto)
-	at(std::size_t const& i) {
-		return data_[i];
+	at(std::size_t const i) {
+		return data_.at(i);
 	}
 	
 	decltype(auto)
-	at(std::size_t const& i) const {
-		return data_[i];
+	at(std::size_t const i) const {
+		return data_.at(i);
 	}
 
 	auto
 	operator() (range<std::size_t,std::size_t> const& r) const {
-		rtsacv v (r.last() - r.first() + 1);
-		for (std::size_t i = 0; i < v.size(); ++i) {
+		rtsacv<Ring> v (r.last() - r.first() + 1);
+		for (std::size_t i{0}; i < v.size(); ++i) {
 			v.at(i) = at(i + r.first());
 		}
 		return v;

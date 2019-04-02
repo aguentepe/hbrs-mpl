@@ -32,7 +32,8 @@ template<
 	typename T1,
 	typename T2,
 	typename std::enable_if_t<
-		std::is_same_v< hana::tag_of_t<T1>, rtsam_tag > && std::is_same_v< hana::tag_of_t<T2>, rtsam_tag >
+		std::is_same_v< hana::tag_of_t<T1>, rtsam_tag     > && std::is_same_v< hana::tag_of_t<T2>, rtsam_tag > ||
+		std::is_same_v< hana::tag_of_t<T1>, submatrix_tag > && std::is_same_v< hana::tag_of_t<T2>, rtsam_tag >
 	>* = nullptr
 >
 decltype(auto)
@@ -48,10 +49,35 @@ struct minus_impl_rtsam {
 	/* constexpr */ 
 	decltype(auto)
 	operator()(rtsam<Ring,Order> const& M1, rtsam<Ring,Order> const& M2) const {
+		return impl(M1,M2,hana::type_c<Ring>);
+	}
+
+	template<
+		typename Ring,
+		storage_order Order,
+		typename Offset,
+		typename Size
+	>
+	decltype(auto)
+	operator()(submatrix<rtsam<Ring,Order>&, Offset, Size> const& M1, rtsam<Ring,Order> const& M2) const {
+		return impl(M1,M2,hana::type_c<Ring>);
+	}
+
+private:
+	template<
+		typename Ring,
+		typename Matrix1,
+		typename Matrix2
+	>
+	decltype(auto)
+	impl(Matrix1 && Mp1, Matrix2 && Mp2, hana::basic_type<Ring>) const {
+		decltype(auto) M1 {HBRS_MPL_FWD(Mp1)};
+		decltype(auto) M2 {HBRS_MPL_FWD(Mp2)};
+
 		BOOST_ASSERT(M1.m() == M2.m());
 		BOOST_ASSERT(M1.n() == M2.n());
 
-		rtsam<Ring,Order> result {M1.m(), M1.n()};
+		rtsam<Ring, storage_order::row_major> result {M1.m(), M1.n()};
 		for (std::size_t i {0}; i < M1.m(); ++i) {
 			for (std::size_t j {0}; j < M1.n(); ++j) {
 				result.at(make_matrix_index(i, j)) = M1.at(make_matrix_index(i, j)) - M2.at(make_matrix_index(i, j));

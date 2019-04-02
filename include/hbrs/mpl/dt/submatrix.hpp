@@ -45,19 +45,21 @@ struct submatrix {
 	submatrix(Matrix_ && mat, Offset_ && o, Size_ && sz)
 	: mat_{HBRS_MPL_FWD(mat)}, o_{HBRS_MPL_FWD(o)}, sz_{HBRS_MPL_FWD(sz)}
 	{
-		BOOST_ASSERT(
-			(*less_equal)(
-				plus(m(o_), m(sz_)),
-				m(hbrs::mpl::size(mat_))
-			)
-		);
+		/* BOOST_ASSERT( */
+		/* 	(*less_equal)( */
+		/* 		/1* plus(m(o_), m(sz_)), *1/ */
+		/* 		/1* m(hbrs::mpl::size(mat_)) *1/ */
+		/* 	) */
+		/* ); */
+		BOOST_ASSERT(o_.m() + sz_.m() <= mat_.size().m());
 		
-		BOOST_ASSERT(
-			(*less_equal)(
-				plus(n(o_), n(sz_)),
-				n(hbrs::mpl::size(mat_))
-			)
-		);
+		/* BOOST_ASSERT( */
+		/* 	(*less_equal)( */
+		/* 		/1* plus(n(o_), n(sz_)), *1/ */
+		/* 		/1* n(hbrs::mpl::size(mat_)) *1/ */
+		/* 	) */
+		/* ); */
+		BOOST_ASSERT(o_.n() + sz_.n() <= mat_.size().n());
 	}
 	
 	constexpr 
@@ -65,68 +67,102 @@ struct submatrix {
 	constexpr 
 	submatrix(submatrix &&) = default;
 	
-	constexpr submatrix&
-	operator=(submatrix const&) = default;
-	constexpr submatrix&
-	operator=(submatrix &&) = default;
+	template<typename Matrix_>
+	submatrix&
+	operator=(Matrix_ && M) {
+		BOOST_ASSERT(m() == HBRS_MPL_FWD(M).m());
+		BOOST_ASSERT(n() == HBRS_MPL_FWD(M).n());
+		for (std::size_t i {0}; i <= HBRS_MPL_FWD(M).m(); ++i) {
+			for (std::size_t j {0}; j <= HBRS_MPL_FWD(M).n(); ++j) {
+				at(make_matrix_index(i,j)) = HBRS_MPL_FWD(M).at(make_matrix_index(i,j));
+			}
+		}
+		return *this;
+	}
+
 	
 	constexpr decltype(auto)
 	size() const { return (sz_); };
 	
+	auto
+	m() const {
+		return sz_.m();
+	}
+
+	auto
+	n() const {
+		return sz_.n();
+	}
+
 	template<typename Index>
 	constexpr decltype(auto)
 	at(Index && i) {
-		return (*hbrs::mpl::at)(
-			mat_,
-			make_matrix_index(
-				(*plus)(m(o_), m(HBRS_MPL_FWD(i))),
-				(*plus)(n(o_), n(HBRS_MPL_FWD(i)))
-			)
-		);
+		/* return (*hbrs::mpl::at)( */
+		/* 	mat_, */
+		/* 	make_matrix_index( */
+		/* 		(*plus)(m(o_), m(HBRS_MPL_FWD(i))), */
+		/* 		(*plus)(n(o_), n(HBRS_MPL_FWD(i))) */
+		/* 	) */
+		/* ); */
+		return mat_.at(make_matrix_index(o_.m() + HBRS_MPL_FWD(i).m(), o_.n() + HBRS_MPL_FWD(i).n()));
 	}
 	
 	template<typename Index>
 	constexpr decltype(auto)
 	at(Index && i) const {
-		return (*hbrs::mpl::at)(
-			mat_,
-			make_matrix_index(
-				(*plus)(m(o_), m(HBRS_MPL_FWD(i))),
-				(*plus)(n(o_), n(HBRS_MPL_FWD(i)))
-			)
-		);
+		/* return (*hbrs::mpl::at)( */
+		/* 	mat_, */
+		/* 	make_matrix_index( */
+		/* 		(*plus)(m(o_), m(HBRS_MPL_FWD(i))), */
+		/* 		(*plus)(n(o_), n(HBRS_MPL_FWD(i))) */
+		/* 	) */
+		/* ); */
+		return mat_.at(make_matrix_index(o_.m() + HBRS_MPL_FWD(i).m(), o_.n() + HBRS_MPL_FWD(i).n()));
 	}
 	
-	template<typename Index>
-	constexpr auto
-	operator[](Index && i) & {
-		return make_subsequence(
-			smr<submatrix &, std::decay_t<Index>>{*this, HBRS_MPL_FWD(i)},
-			(*n)(o_),
-			(*n)(sz_)
-		);
-	}
+	/* template<typename Index> */
+	/* constexpr auto */
+	/* operator[](Index && i) & { */
+	/* 	return make_subsequence( */
+	/* 		smr<submatrix &, std::decay_t<Index>>{*this, HBRS_MPL_FWD(i)}, */
+	/* 		/1* (*n)(o_), *1/ */
+	/* 		o_.n(), */
+	/* 		/1* (*n)(sz_) *1/ */
+	/* 		sz_.n() */
+	/* 	); */
+	/* } */
 	
-	template<typename Index>
-	constexpr auto
-	operator[](Index && i) const& {
-		return make_subsequence(
-			smr<submatrix const&, std::decay_t<Index>>{*this, HBRS_MPL_FWD(i)},
-			(*n)(o_),
-			(*n)(sz_)
-		);
-	}
+	/* template<typename Index> */
+	/* constexpr auto */
+	/* operator[](Index && i) const& { */
+	/* 	return make_subsequence( */
+	/* 		smr<submatrix const&, std::decay_t<Index>>{*this, HBRS_MPL_FWD(i)}, */
+	/* 		/1* (*n)(o_), *1/ */
+	/* 		o_.n(), */
+	/* 		/1* (*n)(sz_) *1/ */
+	/* 		sz_.n() */
+	/* 	); */
+	/* } */
 	
-	template<typename Index>
-	constexpr auto
-	operator[](Index && i) && {
-		return make_subsequence(
-			make_smr(std::move(*this), HBRS_MPL_FWD(i)),
-			(*n)(o_),
-			(*n)(sz_)
-		);
-	}
+	/* template<typename Index> */
+	/* constexpr auto */
+	/* operator[](Index && i) && { */
+	/* 	return make_subsequence( */
+	/* 		make_smr(std::move(*this), HBRS_MPL_FWD(i)), */
+	/* 		/1* (*n)(o_), *1/ */
+	/* 		o_.n(), */
+	/* 		/1* (*n)(sz_) *1/ */
+	/* 		sz_.n() */
+	/* 	); */
+	/* } */
 	
+	decltype(auto)
+	operator()(range<std::size_t,std::size_t> const& rows, std::size_t const column) const;
+	decltype(auto)
+	operator()(std::size_t const row, range<std::size_t,std::size_t> const& columns) const;
+	decltype(auto)
+	operator()(range<std::size_t,std::size_t> const& rows, range<std::size_t,std::size_t> const& columns);
+
 private:
 	Matrix mat_;
 	Offset const o_;

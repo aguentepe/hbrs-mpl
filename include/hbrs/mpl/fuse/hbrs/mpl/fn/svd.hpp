@@ -21,6 +21,7 @@
 #include <hbrs/mpl/dt/bidiag_result.hpp>
 #include <hbrs/mpl/dt/svd_result.hpp>
 #include <hbrs/mpl/dt/rtsam.hpp>
+#include <hbrs/mpl/dt/submatrix.hpp>
 #include <hbrs/mpl/dt/rtsacv.hpp>
 #include <hbrs/mpl/dt/rtsarv.hpp>
 #include <hbrs/mpl/dt/range.hpp>
@@ -189,7 +190,8 @@ private:
 		 *
 		 * Calculate mu.
 		 */
-		auto const T {transpose(B22) * B22};
+		/* auto const T {transpose(B22) * B22}; */ // FIXME
+		auto T {transpose(B22) * B22};
 		range<std::size_t,std::size_t> const T22 {T.m() - 2, T.m() - 1};
 		auto const l {eigenvalueOf2x2Matrix(T(T22, T22))};
 		double const tnn {T.at(make_matrix_index(T.m() - 1, T.m() - 1))};
@@ -224,27 +226,30 @@ private:
 				z = B22.at(make_matrix_index(k, k + 2));
 			}
 		}
-		overwrite(B, pq, pq, B22);
+		/* overwrite(B, pq, pq, B22); */
 	}
 
 	/*
-	 * Returns a vector of lenght 2 that holds eigenvalues of 2x2 Matrix A.
+	 * Returns an array of lenght 2 that holds eigenvalues of 2x2 Matrix A.
 	 */
 	template<
 		typename Ring,
-		storage_order Order
+		storage_order Order,
+		typename Offset,
+		typename Size
 	>
-	rtsacv<Ring> const eigenvalueOf2x2Matrix(rtsam<Ring,Order> const& A) {
-		rtsacv<Ring> result(2);
+	auto const
+	eigenvalueOf2x2Matrix(submatrix<rtsam<Ring,Order>&, Offset,Size> const& A) {
+		std::array<Ring, 2> result;
 		if (A.at(make_matrix_index(0, 1)) == 0 && A.at(make_matrix_index(1, 0)) == 0) {
-			result.at(0) = 1;
-			result.at(1) = 0;
+			result[0] = 1;
+			result[1] = 0;
 		} else {
 			double const T {A.at(make_matrix_index(0, 0)) + A.at(make_matrix_index(1, 1))};
 			double const D {A.at(make_matrix_index(0, 0)) * A.at(make_matrix_index(1, 1)) - A.at(make_matrix_index(0, 1)) * A.at(make_matrix_index(1, 0))};
 
-			result.at(0) = T / 2 + std::sqrt((T * T / 4 - D));
-			result.at(1) = T / 2 - std::sqrt((T * T / 4 - D));
+			result[0] = T / 2 + std::sqrt((T * T / 4 - D));
+			result[1] = T / 2 - std::sqrt((T * T / 4 - D));
 		}
 		return result;
 	}
@@ -262,12 +267,9 @@ private:
 	 *
 	 * Apply the Givens roation on A and return A.
 	 */
-	template<
-		typename Ring,
-		storage_order Order
-	>
-	rtsam<Ring,Order>
-	GivensRotate(std::array<Ring, 2> const& cs, rtsam<Ring,Order>& A, std::size_t const i, std::size_t const k) {
+	template<typename Matrix>
+	auto
+	GivensRotate(std::array<double, 2> const& cs, Matrix& A, std::size_t const i, std::size_t const k) {
 		BOOST_ASSERT(i < A.m());
 		BOOST_ASSERT(k < A.m());
 		for (std::size_t j {0}; j <= A.n() - 1; ++j) {
@@ -291,12 +293,9 @@ private:
 	 *
 	 * Apply the Givens roation on A and return A.
 	 */
-	template<
-		typename Ring,
-		storage_order Order
-	>
-	rtsam<Ring,Order>
-	GivensRotate(rtsam<Ring,Order>& A, std::array<Ring, 2> const& cs, std::size_t const i, std::size_t const k) {
+	template<typename Matrix>
+	auto
+	GivensRotate(Matrix& A, std::array<double, 2> const& cs, std::size_t const i, std::size_t const k) {
 		BOOST_ASSERT(i < A.n());
 		BOOST_ASSERT(k < A.n());
 		for (std::size_t j {0}; j <= A.m() - 1; ++j) {

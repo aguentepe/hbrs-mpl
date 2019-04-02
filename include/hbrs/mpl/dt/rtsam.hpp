@@ -119,7 +119,7 @@ struct rtsam {
 	decltype(auto)
 	operator()(range<std::size_t,std::size_t> const& rows, std::size_t const column) const;
 	decltype(auto)
-	operator()(std::size_t const& row, range<std::size_t,std::size_t> const& columns) const;
+	operator()(std::size_t const row, range<std::size_t,std::size_t> const& columns) const;
 	decltype(auto)
 	operator()(range<std::size_t,std::size_t> const& rows, range<std::size_t,std::size_t> const& columns);
 	decltype(auto)
@@ -200,31 +200,31 @@ overwrite(rtsam<Ring,Order>& M, double const row, range<std::size_t,std::size_t>
     }
 }
 
-template<
-	typename Ring,
-	storage_order Order
->
-void
-overwrite(rtsam<Ring,Order>& M1, std::vector<std::size_t> const rows, range<std::size_t,std::size_t> const& columns, rtsam<Ring,Order> const& M2){
-    for (auto const i : rows) {
-        for (std::size_t j {columns.first()}; j <= columns.last(); ++j) {
-            M1.at(make_matrix_index(i,j)) = M2.at(make_matrix_index(i, j - columns.first()));
-        }
-    }
-}
+/* template< */
+/* 	typename Ring, */
+/* 	storage_order Order */
+/* > */
+/* void */
+/* overwrite(rtsam<Ring,Order>& M1, std::vector<std::size_t> const rows, range<std::size_t,std::size_t> const& columns, rtsam<Ring,Order> const& M2){ */
+/*     for (auto const i : rows) { */
+/*         for (std::size_t j {columns.first()}; j <= columns.last(); ++j) { */
+/*             M1.at(make_matrix_index(i,j)) = M2.at(make_matrix_index(i, j - columns.first())); */
+/*         } */
+/*     } */
+/* } */
 
-template<
-	typename Ring,
-	storage_order Order
->
-void
-overwrite(rtsam<Ring,Order>& M1, range<std::size_t,std::size_t> const& rows, std::vector<std::size_t> const columns, rtsam<Ring,Order> const& M2){
-    for (std::size_t i {rows.first()}; i <= rows.last(); ++i) {
-        for (auto const j : columns) {
-            M1.at(make_matrix_index(i,j)) = M2.at(make_matrix_index(i - rows.first(), j));
-        }
-    }
-}
+/* template< */
+/* 	typename Ring, */
+/* 	storage_order Order */
+/* > */
+/* void */
+/* overwrite(rtsam<Ring,Order>& M1, range<std::size_t,std::size_t> const& rows, std::vector<std::size_t> const columns, rtsam<Ring,Order> const& M2){ */
+/*     for (std::size_t i {rows.first()}; i <= rows.last(); ++i) { */
+/*         for (auto const j : columns) { */
+/*             M1.at(make_matrix_index(i,j)) = M2.at(make_matrix_index(i - rows.first(), j)); */
+/*         } */
+/*     } */
+/* } */
 
 HBRS_MPL_NAMESPACE_END
 

@@ -58,26 +58,46 @@ struct transpose_impl_scv {
 	}
 };
 
-struct transpose_impl_rtsam {
+struct transpose_impl_matrix {
 	template<
 		typename Ring,
 		storage_order Order
 	>
     decltype(auto)
     operator()(rtsam<Ring,Order> const& M) const {
-        rtsam<Ring,Order> result {M.n(), M.m()};
+		return impl(M, hana::type_c<Ring>);
+    }
+
+	template<
+		typename Ring,
+		storage_order Order,
+		typename Offset,
+		typename Size
+	>
+	decltype(auto)
+	operator()(submatrix<rtsam<Ring,Order>&, Offset,Size> const& M) const {
+		return impl(M, hana::type_c<Ring>);
+	}
+
+private:
+	template<typename Ring, typename Matrix>
+	decltype(auto)
+	impl(Matrix && Mp, hana::basic_type<Ring>) const {
+		decltype(auto) M {HBRS_MPL_FWD(Mp)};
+
+        rtsam<Ring, storage_order::row_major> result {M.n(), M.m()};
         for (std::size_t i {0}; i < result.m(); ++i) {
             for (std::size_t j {0}; j < result.n(); ++j) {
                 result.at(make_matrix_index(i, j)) = M.at(make_matrix_index(j, i));
             }
         }
         return result;
-    }
+	}
 };
 
 struct transpose_impl_rtsacv {
 	template<typename Ring>
-    decltype(auto)
+	auto
     operator()(rtsacv<Ring> const& v) const {
         return rtsarv(v);
     }
@@ -85,7 +105,7 @@ struct transpose_impl_rtsacv {
 
 struct transpose_impl_rtsarv {
 	template<typename Ring>
-    decltype(auto)
+	auto
     operator()(rtsarv<Ring> const& v) const {
         return v.transpose();
     }
@@ -97,7 +117,7 @@ HBRS_MPL_NAMESPACE_END
 #define HBRS_MPL_FUSE_HBRS_MPL_FN_TRANSPOSE_IMPLS boost::hana::make_tuple(                                             \
 		hbrs::mpl::detail::transpose_impl_srv{},                                                                       \
 		hbrs::mpl::detail::transpose_impl_scv{},                                                                       \
-		hbrs::mpl::detail::transpose_impl_rtsam{},                                                                     \
+		hbrs::mpl::detail::transpose_impl_matrix{},                                                                     \
 		hbrs::mpl::detail::transpose_impl_rtsacv{},                                                                    \
 		hbrs::mpl::detail::transpose_impl_rtsarv{}                                                                     \
 	)

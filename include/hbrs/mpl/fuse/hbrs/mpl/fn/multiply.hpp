@@ -24,7 +24,7 @@
 #include <hbrs/mpl/dt/rtsacv.hpp>
 #include <hbrs/mpl/dt/rtsarv.hpp>
 #include <hbrs/mpl/dt/rtsam.hpp>
-#include <hbrs/mpl/dt/ssm.hpp>
+#include <hbrs/mpl/dt/submatrix.hpp>
 #include <hbrs/mpl/dt/range.hpp>
 #include <hbrs/mpl/fn/transpose.hpp>
 #include <cmath>
@@ -35,19 +35,19 @@ namespace hana = boost::hana;
 
 template<typename Ring, storage_order Order>
 rtsam<Ring,Order>
-operator* (rtsam<Ring,Order> M, Ring const& d) {
+operator* (rtsam<Ring,Order> const& M, Ring const& d) {
 	return multiply(M,d);
 }
 
 template<typename Ring, storage_order Order>
 rtsam<Ring,Order>
-operator* (Ring const& d, rtsam<Ring,Order> M) {
+operator* (Ring const& d, rtsam<Ring,Order> const& M) {
 	return multiply(d,M);
 }
 
 template<typename Ring>
 decltype(auto)
-operator*(Ring const& s, rtsacv<Ring> v) {
+operator*(Ring const& s, rtsacv<Ring> const& v) {
 	return multiply(v,s);
 }
 
@@ -55,13 +55,16 @@ template<
 	typename T1,
 	typename T2,
 	typename std::enable_if_t<
-		std::is_same_v< hana::tag_of_t<T1>, rtsam_tag  > && std::is_same_v< hana::tag_of_t<T2>, rtsam_tag  > ||
-		std::is_same_v< hana::tag_of_t<T1>, rtsam_tag  > && std::is_same_v< hana::tag_of_t<T2>, rtsacv_tag > ||
-		std::is_same_v< hana::tag_of_t<T1>, rtsam_tag  > && std::is_same_v< hana::tag_of_t<T2>, ssm_tag    > ||
-		std::is_same_v< hana::tag_of_t<T1>, rtsacv_tag > && std::is_same_v< hana::tag_of_t<T2>, rtsarv_tag > ||
-		std::is_same_v< hana::tag_of_t<T1>, rtsarv_tag > && std::is_same_v< hana::tag_of_t<T2>, rtsam_tag  > ||
-		std::is_same_v< hana::tag_of_t<T1>, rtsarv_tag > && std::is_same_v< hana::tag_of_t<T2>, rtsacv_tag > ||
-		std::is_same_v< hana::tag_of_t<T1>, rtsarv_tag > && std::is_same_v< hana::tag_of_t<T2>, ssm_tag >
+		std::is_same_v< hana::tag_of_t<T1>, rtsam_tag     > && std::is_same_v< hana::tag_of_t<T2>, rtsam_tag     > ||
+		std::is_same_v< hana::tag_of_t<T1>, rtsam_tag     > && std::is_same_v< hana::tag_of_t<T2>, submatrix_tag > ||
+		std::is_same_v< hana::tag_of_t<T1>, rtsam_tag     > && std::is_same_v< hana::tag_of_t<T2>, rtsacv_tag    > ||
+		std::is_same_v< hana::tag_of_t<T1>, submatrix_tag > && std::is_same_v< hana::tag_of_t<T2>, rtsam_tag     > ||
+		std::is_same_v< hana::tag_of_t<T1>, submatrix_tag > && std::is_same_v< hana::tag_of_t<T2>, submatrix_tag > ||
+		std::is_same_v< hana::tag_of_t<T1>, submatrix_tag > && std::is_same_v< hana::tag_of_t<T2>, rtsacv_tag    > ||
+		std::is_same_v< hana::tag_of_t<T1>, rtsacv_tag    > && std::is_same_v< hana::tag_of_t<T2>, rtsarv_tag    > ||
+		std::is_same_v< hana::tag_of_t<T1>, rtsarv_tag    > && std::is_same_v< hana::tag_of_t<T2>, rtsam_tag     > ||
+		std::is_same_v< hana::tag_of_t<T1>, rtsarv_tag    > && std::is_same_v< hana::tag_of_t<T2>, rtsacv_tag    > ||
+		std::is_same_v< hana::tag_of_t<T1>, rtsarv_tag    > && std::is_same_v< hana::tag_of_t<T2>, submatrix_tag >
 	>* = nullptr
 >
 decltype(auto)
@@ -83,21 +86,61 @@ struct multiply_impl_rtsarv_rtsacv {
 	}
 };
 
-struct multiply_impl_rtsam_rtsam {
+struct multiply_impl_matrix_matrix {
+
 	template<
-		typename Matrix1,
-		typename Matrix2,
-		typename std::enable_if_t<
-			(std::is_same_v< hana::tag_of_t<Matrix1>, rtsam_tag > || std::is_same_v< hana::tag_of_t<Matrix1>, ssm_tag >) &&
-			(std::is_same_v< hana::tag_of_t<Matrix2>, rtsam_tag > || std::is_same_v< hana::tag_of_t<Matrix2>, ssm_tag >)
-		>* = nullptr
+		typename Ring,
+		storage_order Order
 	>
-	/* constexpr */ 
 	decltype(auto)
-	operator()(Matrix1 const& M1, Matrix2 const& M2) const {
+	operator()(rtsam<Ring,Order> const& M1, rtsam<Ring,Order> const& M2) const {
+		return impl(M1,M2, hana::type_c<Ring>);
+	}
+
+	template<
+		typename Ring,
+		storage_order Order,
+		typename Offset,
+		typename Size
+	>
+	decltype(auto)
+	operator()(submatrix<rtsam<Ring,Order>&, Offset,Size> const& M1, submatrix<rtsam<Ring,Order>&, Offset,Size> const& M2) const {
+		return impl(M1,M2, hana::type_c<Ring>);
+	}
+
+	template<
+		typename Ring,
+		storage_order Order,
+		typename Offset,
+		typename Size
+	>
+	decltype(auto)
+	operator()(rtsam<Ring,Order> const& M1, submatrix<rtsam<Ring,Order>&, Offset,Size> const& M2) const {
+		return impl(M1,M2, hana::type_c<Ring>);
+	}
+
+	template<
+		typename Ring,
+		storage_order Order,
+		typename Offset,
+		typename Size
+	>
+	decltype(auto)
+	operator()(submatrix<rtsam<Ring,Order>&, Offset,Size> const& M1, rtsam<Ring,Order> const& M2) const {
+		return impl(M1,M2, hana::type_c<Ring>);
+	}
+
+private:
+	template<
+		typename Ring,
+		typename Matrix1,
+		typename Matrix2
+	>
+	decltype(auto)
+	impl(Matrix1 && M1, Matrix2 && M2, hana::basic_type<Ring>) const {
 		BOOST_ASSERT(M1.n() == M2.m());
 
-		rtsam<decltype(M1.at(make_matrix_index(0,0))), storage_order::row_major> result {M1.m(), M2.n()};
+		rtsam<Ring, storage_order::row_major> result {M1.m(), M2.n()};
 		for (std::size_t i {0}; i < result.m(); ++i) {
 			for (std::size_t j {0}; j < result.n(); ++j) {
 				result.at(make_matrix_index(i, j)) = M1(i, range<std::size_t,std::size_t>(std::size_t{0}, M1.n() - 1)) * M2(range<std::size_t,std::size_t>(std::size_t{0}, M2.m() - 1), j);
@@ -107,15 +150,42 @@ struct multiply_impl_rtsam_rtsam {
 	}
 };
 
-struct multiply_impl_rtsarv_rtsam {
+struct multiply_impl_rtsarv_matrix {
+
 	template<
 		typename Ring,
-		typename Matrix,
-		typename std::enable_if_t< std::is_same_v< hana::tag_of_t<Matrix>, rtsam_tag > || std::is_same_v< hana::tag_of_t<Matrix>, ssm_tag > >* = nullptr
+		storage_order Order
 	>
 	/* constexpr */ 
 	decltype(auto)
-	operator()(rtsarv<Ring> const& v, Matrix const& M) const {
+	operator()(rtsarv<Ring> const& v, rtsam<Ring,Order> const& M) const {
+		return impl(v,M, hana::type_c<Ring>);
+	}
+
+	template<
+		typename Ring,
+		storage_order Order,
+		typename Offset,
+		typename Size
+	>
+	/* constexpr */ 
+	decltype(auto)
+	operator()(rtsarv<Ring> const& v, submatrix<rtsam<Ring,Order>&, Offset,Size> const& M) const {
+		return impl(v,M, hana::type_c<Ring>);
+	}
+
+private:
+	template<
+		typename Ring,
+		typename RVector,
+		typename Matrix
+	>
+	/* constexpr */ 
+	decltype(auto)
+	impl(RVector && vp, Matrix && Mp, hana::basic_type<Ring>) const {
+		decltype(auto) v {vp};
+		decltype(auto) M {Mp};
+
 		BOOST_ASSERT(v.size() == M.m());
 
 		rtsarv<Ring> result(M.n());
@@ -126,7 +196,8 @@ struct multiply_impl_rtsarv_rtsam {
 	}
 };
 
-struct multiply_impl_rtsam_rtsacv {
+struct multiply_impl_matrix_rtsacv {
+
 	template<
 		typename Ring,
 		storage_order Order
@@ -134,6 +205,28 @@ struct multiply_impl_rtsam_rtsacv {
 	/* constexpr */ 
 	decltype(auto)
 	operator()(rtsam<Ring,Order> const& M, rtsacv<Ring> const& v) const {
+		return impl(M,v, hana::type_c<Ring>);
+	}
+
+	template<
+		typename Ring,
+		storage_order Order,
+		typename Offset,
+		typename Size
+	>
+	decltype(auto)
+	operator()(submatrix<rtsam<Ring,Order>&, Offset,Size> const& M, rtsacv<Ring> const& v) const {
+		return impl(M,v, hana::type_c<Ring>);
+	}
+
+private:
+	template<
+		typename Ring,
+		typename Matrix,
+		typename CVector
+	>
+	decltype(auto)
+	impl(Matrix && M, CVector && v, hana::basic_type<Ring>) const {
 		BOOST_ASSERT(M.n() == v.size());
 
 		rtsacv<Ring> result(M.m());
@@ -191,7 +284,8 @@ struct multiply_impl_ring_rtsam {
 struct multiply_impl_rtsacv_ring {
 	template<typename Ring>
 	/* constexpr */ 
-	decltype(auto)
+	/* decltype(auto) */
+	auto
 	operator()(rtsacv<Ring> v, Ring const& s) const {
 		for (std::size_t i {0}; i < v.size(); ++i)
 			v.at(i) *= s;
@@ -213,9 +307,9 @@ HBRS_MPL_NAMESPACE_END
 
 #define HBRS_MPL_FUSE_HBRS_MPL_FN_MULTIPLY_IMPLS boost::hana::make_tuple(                                              \
 		hbrs::mpl::detail::multiply_impl_rtsarv_rtsacv{},                                                              \
-		hbrs::mpl::detail::multiply_impl_rtsam_rtsam{},                                                                \
-		hbrs::mpl::detail::multiply_impl_rtsarv_rtsam{},                                                               \
-		hbrs::mpl::detail::multiply_impl_rtsam_rtsacv{},                                                               \
+		hbrs::mpl::detail::multiply_impl_matrix_matrix{},                                                                \
+		hbrs::mpl::detail::multiply_impl_rtsarv_matrix{},                                                               \
+		hbrs::mpl::detail::multiply_impl_matrix_rtsacv{},                                                               \
 		hbrs::mpl::detail::multiply_impl_rtsacv_rtsarv{},                                                              \
 		hbrs::mpl::detail::multiply_impl_rtsam_ring{},                                                                 \
 		hbrs::mpl::detail::multiply_impl_ring_rtsam{},                                                                 \
