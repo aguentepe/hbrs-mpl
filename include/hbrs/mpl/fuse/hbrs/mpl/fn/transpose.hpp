@@ -97,7 +97,7 @@ private:
 
 struct transpose_impl_rtsacv {
 	template<typename Ring>
-	auto
+	decltype(auto)
     operator()(rtsacv<Ring> const& v) const {
         return rtsarv(v);
     }
@@ -105,7 +105,7 @@ struct transpose_impl_rtsacv {
 
 struct transpose_impl_rtsarv {
 	template<typename Ring>
-	auto
+	decltype(auto)
     operator()(rtsarv<Ring> const& v) const {
         return v.transpose();
     }
