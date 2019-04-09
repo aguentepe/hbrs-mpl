@@ -14,18 +14,16 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef HBRS_MPL_FN_ALMOST_EQUAL_HPP
-#define HBRS_MPL_FN_ALMOST_EQUAL_HPP
+#pragma once
 
-#include <hbrs/mpl/fwd/fn/almost_equal.hpp>
-#include <hbrs/mpl/dt/function.hpp>
+#ifndef HBRS_MPL_FWD_FN_ALMOST_EQUAL_HPP
+#define HBRS_MPL_FWD_FN_ALMOST_EQUAL_HPP
+
+#include <hbrs/mpl/config.hpp>
+#include <hbrs/mpl/fwd/dt/function.hpp>
 
 HBRS_MPL_NAMESPACE_BEGIN
-HBRS_MPL_DEF_F2(almost_equal, almost_equal_t)
+HBRS_MPL_DEC_F2(almost_equal, almost_equal_t)
 HBRS_MPL_NAMESPACE_END
 
-#include <hbrs/mpl/fuse/fn/almost_equal.hpp>
-#include <hbrs/mpl/core/implementations_of.hpp>
-HBRS_MPL_MAP_IMPLS(almost_equal_t, HBRS_MPL_FUSE_FN_ALMOST_EQUAL_IMPLS)
-
-#endif // !HBRS_MPL_FN_ALMOST_EQUAL_HPP
+#endif // !HBRS_MPL_FWD_FN_ALMOST_EQUAL_HPP

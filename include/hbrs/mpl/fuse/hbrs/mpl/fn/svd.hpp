@@ -73,7 +73,7 @@ struct svd_impl {
 		std::size_t p {0};
 		while (q != n) {
 			for (std::size_t i {0}; i < n - 1; ++i) {
-				if (almost_zero(B.at(make_matrix_index(i, i + 1)))) {
+				if (almost_equal(0., B.at(make_matrix_index(i, i + 1)))) {
 					B.at(make_matrix_index(i, i + 1)) = 0;
 				}
 			}
