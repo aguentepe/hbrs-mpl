@@ -61,6 +61,15 @@ struct rtsam {
 		BOOST_ASSERT(m * n >= 0);
 	}
 
+	explicit rtsam(submatrix<rtsam<Ring,Order>&, matrix_index<std::size_t,std::size_t>, matrix_size<std::size_t,std::size_t>> const& M)
+	: rtsam(M.size()) {
+		for (std::size_t i{0}; i < m(); ++i) {
+			for (std::size_t j{0}; j < n(); ++j) {
+				at(make_matrix_index(i,j)) = M.at(make_matrix_index(i,j));
+			}
+		}
+	}
+
     explicit rtsam(rtsacv<Ring> const& v) : data_ {v.data()}, size_{v.m(), 1} {}
 
     explicit rtsam(rtsarv<Ring> const& v) : data_ {v.data()}, size_{1, v.n()} {}
