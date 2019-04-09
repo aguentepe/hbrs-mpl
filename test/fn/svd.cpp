@@ -93,10 +93,10 @@ BOOST_AUTO_TEST_CASE(svd_matrix) {
 	auto DSVD{svd(D,0)};
 
 	auto AA   {ASVD.u() * ASVD.s() * transpose(ASVD.v())};
-	BOOST_TEST(AA == A);
-	BOOST_TEST(CSVD.u() * CSVD.s() * transpose(CSVD.v()) == C);
+	BOOST_TEST(almost_equal(AA, A));
+	BOOST_TEST(almost_equal(CSVD.u() * CSVD.s() * transpose(CSVD.v()), C));
 	auto DD   {DSVD.u() * DSVD.s() * transpose(DSVD.v())};
-	BOOST_TEST(DD == D);
+	BOOST_TEST(almost_equal(DD, D));
 }
 
 BOOST_AUTO_TEST_CASE(svd_comparison, * utf::tolerance(0.000000001)) {

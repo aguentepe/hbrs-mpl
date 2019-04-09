@@ -21,7 +21,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <hbrs/mpl/fn/bidiag.hpp>
-#include <hbrs/mpl/fn/equal.hpp>
+#include <hbrs/mpl/fn/almost_equal.hpp>
 #include <hbrs/mpl/fn/multiply.hpp>
 #include <hbrs/mpl/dt/storage_order.hpp>
 #include <hbrs/mpl/dt/rtsam.hpp>
@@ -67,9 +67,9 @@ BOOST_AUTO_TEST_CASE(bidiag_test1) {
         auto C2 { B2.u() * B2.b() * transpose(B2.v()) };
         auto C3 { B3.u() * B3.b() * transpose(B3.v()) };
         
-        BOOST_TEST( C  == A  );
-        BOOST_TEST( C2 == A  );
-        BOOST_TEST( C3 == A2 );
+        BOOST_TEST( almost_equal(C , A ) );
+        BOOST_TEST( almost_equal(C2, A ) );
+        BOOST_TEST( almost_equal(C3, A2) );
 }
 
 BOOST_AUTO_TEST_SUITE_END()
