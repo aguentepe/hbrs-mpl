@@ -53,10 +53,10 @@ struct rtsacv {
 		return data_.size();
 	}
 
-	/* decltype(auto) */
-	/* data() const { */
-	/* 	return data_; */
-	/* } */
+	decltype(auto)
+	data() const {
+		return data_;
+	}
 
 	decltype(auto)
 	at(std::size_t const i) {
