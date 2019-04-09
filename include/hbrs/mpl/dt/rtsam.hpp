@@ -121,7 +121,7 @@ struct rtsam {
 	decltype(auto)
 	operator()(std::size_t const row, range<std::size_t,std::size_t> const& columns) const;
 	decltype(auto)
-	operator()(range<std::size_t,std::size_t> const& rows, range<std::size_t,std::size_t> const& columns);
+	operator()(range<std::size_t,std::size_t> const& rows, range<std::size_t,std::size_t> const& columns) &;
 	decltype(auto)
 	operator()(std::vector<std::size_t> const& rows, range<std::size_t,std::size_t> const& columns) const {
         std::size_t const cLength {columns.last() - columns.first() + 1};

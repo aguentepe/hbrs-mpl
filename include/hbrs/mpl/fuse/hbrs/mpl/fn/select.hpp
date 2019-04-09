@@ -47,7 +47,7 @@ rtsam<Ring,Order>::operator()(std::size_t const row, range<std::size_t,std::size
 
 template<typename Ring, storage_order Order>
 decltype(auto)
-rtsam<Ring,Order>::operator()(range<std::size_t,std::size_t> const& rows, range<std::size_t,std::size_t> const& columns) {
+rtsam<Ring,Order>::operator()(range<std::size_t,std::size_t> const& rows, range<std::size_t,std::size_t> const& columns) & {
 	return select(*this, std::make_pair(rows, columns));
 }
 
@@ -65,7 +65,7 @@ submatrix<Matrix, Offset, Size>::operator()(std::size_t const row, range<std::si
 
 template<typename Matrix, typename Offset, typename Size>
 decltype(auto)
-submatrix<Matrix, Offset, Size>::operator()(range<std::size_t,std::size_t> const& rows, range<std::size_t,std::size_t> const& columns) {
+submatrix<Matrix, Offset, Size>::operator()(range<std::size_t,std::size_t> const& rows, range<std::size_t,std::size_t> const& columns) & {
 	return select(*this, std::make_pair(rows, columns));
 }
 

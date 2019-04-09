@@ -161,7 +161,7 @@ struct submatrix {
 	decltype(auto)
 	operator()(std::size_t const row, range<std::size_t,std::size_t> const& columns) const;
 	decltype(auto)
-	operator()(range<std::size_t,std::size_t> const& rows, range<std::size_t,std::size_t> const& columns);
+	operator()(range<std::size_t,std::size_t> const& rows, range<std::size_t,std::size_t> const& columns) &;
 
 private:
 	Matrix mat_;
