@@ -163,8 +163,8 @@ struct select_impl_rtsam_range_range {
 		decltype(auto) columns {ranges.second};
         BOOST_ASSERT(   rows.last() < M.m());
         BOOST_ASSERT(columns.last() < M.n());
-		return submatrix<rtsam<Ring,Order>&, matrix_index<std::size_t, std::size_t>, matrix_index<std::size_t, std::size_t>>
-			{M, make_matrix_index(rows.first(), columns.first()), make_matrix_index(rows.last() - rows.first() + 1, columns.last() - columns.first() + 1)};
+		return submatrix<rtsam<Ring,Order>&, matrix_index<std::size_t, std::size_t>, matrix_size<std::size_t, std::size_t>>
+			{M, make_matrix_index(rows.first(), columns.first()), make_matrix_size(rows.last() - rows.first() + 1, columns.last() - columns.first() + 1)};
     }
 };
 /* namespace detail */ }
