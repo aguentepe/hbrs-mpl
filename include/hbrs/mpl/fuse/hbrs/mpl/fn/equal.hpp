@@ -27,7 +27,7 @@
 #include <hbrs/mpl/dt/storage_order.hpp>
 #include <hbrs/mpl/dt/rtsam.hpp>
 #include <hbrs/mpl/dt/rtsacv.hpp>
-#include <hbrs/mpl/fn/almost_equal.hpp>
+
 #include <boost/hana/core/tag_of.hpp>
 #include <boost/hana/tuple.hpp>
 #include <type_traits>
@@ -64,13 +64,7 @@ struct equal_impl_rtsam {
 		}
 		for (std::size_t i {0}; i < M1.m(); ++i) {
 			for (std::size_t j {0}; j < M1.n(); ++j) {
-				if (almost_zero(M1.at(make_matrix_index(i, j)))) {
-					if (!almost_zero(M2.at(make_matrix_index(i, j)))) {
-						return false;
-					}
-				} else if (almost_zero(M2.at(make_matrix_index(i, j)))) {
-					return false;
-				} else if (!almost_equal(M1.at(make_matrix_index(i, j)), M2.at(make_matrix_index(i, j)))) {
+				if (M1.at(make_matrix_index(i, j)) != M2.at(make_matrix_index(i, j))) {
 					return false;
 				}
 			}
