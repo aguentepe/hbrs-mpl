@@ -72,8 +72,8 @@ struct submatrix {
 	operator=(Matrix_ && M) {
 		BOOST_ASSERT(m() == HBRS_MPL_FWD(M).m());
 		BOOST_ASSERT(n() == HBRS_MPL_FWD(M).n());
-		for (std::size_t i {0}; i <= HBRS_MPL_FWD(M).m(); ++i) {
-			for (std::size_t j {0}; j <= HBRS_MPL_FWD(M).n(); ++j) {
+		for (std::size_t i {0}; i < HBRS_MPL_FWD(M).m(); ++i) {
+			for (std::size_t j {0}; j < HBRS_MPL_FWD(M).n(); ++j) {
 				at(make_matrix_index(i,j)) = HBRS_MPL_FWD(M).at(make_matrix_index(i,j));
 			}
 		}
