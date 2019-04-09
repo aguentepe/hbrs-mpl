@@ -94,8 +94,7 @@ struct bidiag_impl_householder {
 
 				/* Ajmjn is equivalent to A(j:m,j:n) in the book */
 				auto Ajmjn {A(jm, jn)};
-				/* overwrite(A, jm, jn, (identity<Ring,Order>(m - j) - beta * ni * transpose(ni)) * Ajmjn); // mathematical notation */
-				/* A(jm,jn) = Ajmjn - (beta * ni) * (transpose(ni) * Ajmjn); */
+				/* Ajmjn = (identity<Ring,Order>(m - j) - beta * ni * transpose(ni)) * Ajmjn; // mathematical notation */
 				Ajmjn = Ajmjn - (beta * ni) * (transpose(ni) * Ajmjn);
 				/*
 				 * In the book here the householder vector would be saved
@@ -113,8 +112,7 @@ struct bidiag_impl_householder {
 					auto& beta {h.beta()};
 
 					auto Ajmj1n {A(jm, j1n)}; // equivalent to A(j:m,j+1:n)
-					/* overwrite(A, jm, j1n, Ajmj1n * (identity<Ring,Order>(n-1 - j) - beta * ni * transpose(ni))); // mathematical notation */
-					/* A(jm,j1n) = Ajmj1n - (Ajmj1n * ni) * transpose(beta * ni); */
+					/* Ajmj1n = Ajmj1n * (identity<Ring,Order>(n-1 - j) - beta * ni * transpose(ni)); // mathematical notation */
 					Ajmj1n = Ajmj1n - (Ajmj1n * ni) * transpose(beta * ni);
 					/*
 					 * In the book here the householder vector would be saved
@@ -123,7 +121,6 @@ struct bidiag_impl_householder {
 					 */
 
 					auto Vjmj1n {V(jn, j1n)};
-					/* V(jn,j1n) = Vjmj1n - (Vjmj1n * ni) * transpose(beta * ni); */
 					Vjmj1n = Vjmj1n - (Vjmj1n * ni) * transpose(beta * ni);
 				}
 			}
