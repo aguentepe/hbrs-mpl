@@ -73,8 +73,8 @@ struct svd_impl {
 		std::size_t p {0};
 		while (q != n) {
 			for (std::size_t i {0}; i < n - 1; ++i) {
-				if (almost_equal(0., B.at(make_matrix_index(i, i + 1)))) {
-					B.at(make_matrix_index(i, i + 1)) = 0;
+				if (almost_equal(0., B[i][i+1])) {
+					B[i][i+1] = 0;
 				}
 			}
 
@@ -96,7 +96,7 @@ struct svd_impl {
 					if (q == n-1) {
 						q = n;
 						break;
-					} else if (B.at(make_matrix_index(n-1 - q - 1, n-1 - q)) != 0) {
+					} else if (B[n-1 - q - 1][n-1 - q] != 0) {
 						break;
 					}
 				}
@@ -110,7 +110,7 @@ struct svd_impl {
 				 */
 				{
 					for (p = n-1 - q; p >= 1; --p) {
-						if (B.at(make_matrix_index(p - 1, p)) == 0) {
+						if (B[p-1][p] == 0) {
 							break;
 						} else if (p == 1) {
 							p = 0;
@@ -125,17 +125,17 @@ struct svd_impl {
 				 */
 				auto zeroFound {false}; // Turns true once a zero is found in the bidiagonal of B22
 				for (auto i {p}; i < n - q; ++i) {
-					if (B.at(make_matrix_index(i, i)) == 0) {
+					if (B[i][i] == 0) {
 						zeroFound = true;
 						if (i < n-1 - q) {
 							for (auto j {i + 1}; j < n - q; ++j) {
-								auto theta(givens(-B.at(make_matrix_index(j,j)), B.at(make_matrix_index(i,j))));
+								auto theta(givens(-B[j][j], B[i][j]));
 								B = G(i, j, theta) * B;
 								U = U * G(i, j, theta);
 							}
 						} else {
 							for (auto j {n-1 - q - 1}; j >= p; --j) {
-								auto theta(givens(B.at(make_matrix_index(j,j)), B.at(make_matrix_index(j, n-1 - q))));
+								auto theta(givens(B[j][j], B[j][n-1 - q]));
 								B = B * G(j, n-1 - q, theta);
 								V = V * G(j, n-1 - q, theta);
 							}
@@ -194,11 +194,11 @@ private:
 		auto T {transpose(B22) * B22};
 		range<std::size_t,std::size_t> const T22 {T.m() - 2, T.m() - 1};
 		auto const l {eigenvalueOf2x2Matrix(T(T22, T22))};
-		double const tnn {T.at(make_matrix_index(T.m() - 1, T.m() - 1))};
+		double const tnn {T[T.m()-1][T.m()-1]};
 		double const mu {std::abs(l.at(0) - tnn) < std::abs(l.at(1) - tnn) ? l.at(0) : l.at(1)};
 
-		double y { T.at(make_matrix_index(0, 0)) - mu };
-		double z { T.at(make_matrix_index(0, 1)) };
+		auto y { T[0][0] - mu };
+		auto z { T[0][1] };
 
 		for (std::size_t k {0}; k < B22.n()-1; ++k) {
 			/*
@@ -213,8 +213,8 @@ private:
 				B22 = B22 * G(  k,   k + 1, theta);
 				V   = V   * G(p+k, p+k + 1, theta);
 			}
-			y = B22.at(make_matrix_index(k, k));
-			z = B22.at(make_matrix_index(k + 1, k));
+			y = B22[k  ][k];
+			z = B22[k+1][k];
 			{
 				// Determine c = cos(theta) and s = sin(theta) such that
 				auto const theta { givens(y, z) };
@@ -222,8 +222,8 @@ private:
 				U   = U * G(p+k, p+k + 1, theta);
 			}
 			if (k + 1 < B22.n()-1) {
-				y = B22.at(make_matrix_index(k, k + 1));
-				z = B22.at(make_matrix_index(k, k + 2));
+				y = B22[k][k+1];
+				z = B22[k][k+2];
 			}
 		}
 		/* overwrite(B, pq, pq, B22); */

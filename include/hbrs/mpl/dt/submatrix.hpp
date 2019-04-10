@@ -120,41 +120,41 @@ struct submatrix {
 		return mat_.at(make_matrix_index(o_.m() + HBRS_MPL_FWD(i).m(), o_.n() + HBRS_MPL_FWD(i).n()));
 	}
 	
-	/* template<typename Index> */
-	/* constexpr auto */
-	/* operator[](Index && i) & { */
-	/* 	return make_subsequence( */
-	/* 		smr<submatrix &, std::decay_t<Index>>{*this, HBRS_MPL_FWD(i)}, */
-	/* 		/1* (*n)(o_), *1/ */
-	/* 		o_.n(), */
-	/* 		/1* (*n)(sz_) *1/ */
-	/* 		sz_.n() */
-	/* 	); */
-	/* } */
+	template<typename Index>
+	constexpr auto
+	operator[](Index && i) & {
+		return make_subsequence(
+			smr<submatrix &, std::decay_t<Index>>{*this, HBRS_MPL_FWD(i)},
+			/* (*n)(o_), */
+			o_.n(),
+			/* (*n)(sz_) */
+			sz_.n()
+		);
+	}
 	
-	/* template<typename Index> */
-	/* constexpr auto */
-	/* operator[](Index && i) const& { */
-	/* 	return make_subsequence( */
-	/* 		smr<submatrix const&, std::decay_t<Index>>{*this, HBRS_MPL_FWD(i)}, */
-	/* 		/1* (*n)(o_), *1/ */
-	/* 		o_.n(), */
-	/* 		/1* (*n)(sz_) *1/ */
-	/* 		sz_.n() */
-	/* 	); */
-	/* } */
+	template<typename Index>
+	constexpr auto
+	operator[](Index && i) const& {
+		return make_subsequence(
+			smr<submatrix const&, std::decay_t<Index>>{*this, HBRS_MPL_FWD(i)},
+			/* (*n)(o_), */
+			o_.n(),
+			/* (*n)(sz_) */
+			sz_.n()
+		);
+	}
 	
-	/* template<typename Index> */
-	/* constexpr auto */
-	/* operator[](Index && i) && { */
-	/* 	return make_subsequence( */
-	/* 		make_smr(std::move(*this), HBRS_MPL_FWD(i)), */
-	/* 		/1* (*n)(o_), *1/ */
-	/* 		o_.n(), */
-	/* 		/1* (*n)(sz_) *1/ */
-	/* 		sz_.n() */
-	/* 	); */
-	/* } */
+	template<typename Index>
+	constexpr auto
+	operator[](Index && i) && {
+		return make_subsequence(
+			make_smr(std::move(*this), HBRS_MPL_FWD(i)),
+			/* (*n)(o_), */
+			o_.n(),
+			/* (*n)(sz_) */
+			sz_.n()
+		);
+	}
 	
 	decltype(auto)
 	operator()(range<std::size_t,std::size_t> const& rows, std::size_t const column) const;
