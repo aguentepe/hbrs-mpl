@@ -151,10 +151,6 @@ private:
 };
 
 struct select_impl_rtsam_range_range {
-	/* template< */
-	/* 	typename Matrix, */
-	/* 	typename std::enable_if_t< std::is_same_v< hana::tag_of_t<Matrix>, rtsam_tag > || std::is_same_v< hana::tag_of_t<Matrix>, submatrix_tag > >* = nullptr */
-	/* > */
 	template<typename Ring, storage_order Order>
 	/* constexpr */ 
 	decltype(auto)
@@ -170,10 +166,10 @@ struct select_impl_rtsam_range_range {
 /* namespace detail */ }
 HBRS_MPL_NAMESPACE_END
 
-#define HBRS_MPL_FUSE_HBRS_MPL_FN_SELECT_IMPLS boost::hana::make_tuple(                                              \
-		hbrs::mpl::detail::select_impl_matrix_range_size{},                                                           \
-		hbrs::mpl::detail::select_impl_matrix_size_range{},                                                           \
-		hbrs::mpl::detail::select_impl_rtsam_range_range{}                                                           \
+#define HBRS_MPL_FUSE_HBRS_MPL_FN_SELECT_IMPLS boost::hana::make_tuple(                                                \
+		hbrs::mpl::detail::select_impl_matrix_range_size{},                                                            \
+		hbrs::mpl::detail::select_impl_matrix_size_range{},                                                            \
+		hbrs::mpl::detail::select_impl_rtsam_range_range{}                                                             \
 	)
 
 #endif // !HBRS_MPL_FUSE_HBRS_MPL_FN_SELECT_HPP

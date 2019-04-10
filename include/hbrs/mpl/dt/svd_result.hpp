@@ -1,4 +1,3 @@
-
 /* Copyright (c) 2016 Jakob Meng, <jakobmeng@web.de>
  * 
  * This program is free software: you can redistribute it and/or modify

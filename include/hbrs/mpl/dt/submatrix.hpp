@@ -82,7 +82,9 @@ struct submatrix {
 
 	
 	constexpr decltype(auto)
-	size() const { return (sz_); };
+	size() const {
+		return (sz_);
+	};
 	
 	auto
 	m() const {

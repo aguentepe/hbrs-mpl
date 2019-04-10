@@ -292,8 +292,9 @@ struct multiply_impl_rtsacv_ring {
 	/* decltype(auto) */
 	auto
 	operator()(rtsacv<Ring> v, Ring const& s) const {
-		for (std::size_t i {0}; i < v.size(); ++i)
+		for (std::size_t i {0}; i < v.size(); ++i) {
 			v.at(i) *= s;
+		}
 		return v;
 	}
 };
@@ -432,9 +433,9 @@ HBRS_MPL_NAMESPACE_END
 
 #define HBRS_MPL_FUSE_HBRS_MPL_FN_MULTIPLY_IMPLS boost::hana::make_tuple(                                              \
 		hbrs::mpl::detail::multiply_impl_rtsarv_rtsacv{},                                                              \
-		hbrs::mpl::detail::multiply_impl_matrix_matrix{},                                                                \
-		hbrs::mpl::detail::multiply_impl_rtsarv_matrix{},                                                               \
-		hbrs::mpl::detail::multiply_impl_matrix_rtsacv{},                                                               \
+		hbrs::mpl::detail::multiply_impl_matrix_matrix{},                                                              \
+		hbrs::mpl::detail::multiply_impl_rtsarv_matrix{},                                                              \
+		hbrs::mpl::detail::multiply_impl_matrix_rtsacv{},                                                              \
 		hbrs::mpl::detail::multiply_impl_rtsacv_rtsarv{},                                                              \
 		hbrs::mpl::detail::multiply_impl_rtsam_ring{},                                                                 \
 		hbrs::mpl::detail::multiply_impl_ring_rtsam{},                                                                 \

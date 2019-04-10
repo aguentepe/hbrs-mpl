@@ -182,7 +182,7 @@ private:
 	>
 	void
 	SVDStep(rtsam<Ring,Order>& B, std::size_t const p, std::size_t const q, rtsam<Ring,Order>& U, rtsam<Ring,Order>& V) {
-		range<std::size_t,std::size_t> const pq {p, B.n()-1 - q}; // The range for B22 rows and columns
+		range<std::size_t,std::size_t> const pq { p, B.n()-1 - q }; // The range for B22 rows and columns
 		auto B22 {B(pq, pq)};
 
 		/* Let mu be the eigenvalue of the trailing 2-by-2 submatrix of
@@ -191,11 +191,11 @@ private:
 		 * Calculate mu.
 		 */
 		/* auto const T {transpose(B22) * B22}; */ // FIXME
-		auto T {transpose(B22) * B22};
-		range<std::size_t,std::size_t> const T22 {T.m() - 2, T.m() - 1};
-		auto const l {eigenvalueOf2x2Matrix(T(T22, T22))};
-		double const tnn {T[T.m()-1][T.m()-1]};
-		double const mu {std::abs(l.at(0) - tnn) < std::abs(l.at(1) - tnn) ? l.at(0) : l.at(1)};
+		auto                                 T   { transpose(B22) * B22 };
+		range<std::size_t,std::size_t> const T22 { T.m() - 2, T.m() - 1 };
+		auto                           const l   { eigenvalueOf2x2Matrix(T(T22, T22)) };
+		double                         const tnn { T[T.m()-1][T.m()-1] };
+		auto                           const mu  { std::abs(l.at(0) - tnn) < std::abs(l.at(1) - tnn) ? l.at(0) : l.at(1) };
 
 		auto y { T[0][0] - mu };
 		auto z { T[0][1] };
@@ -226,7 +226,6 @@ private:
 				z = B22[k][k+2];
 			}
 		}
-		/* overwrite(B, pq, pq, B22); */
 	}
 
 	/*
