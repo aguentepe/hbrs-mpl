@@ -25,6 +25,7 @@
 #include <hbrs/mpl/dt/rtsarv.hpp>
 #include <hbrs/mpl/dt/rtsam.hpp>
 #include <hbrs/mpl/dt/submatrix.hpp>
+#include <hbrs/mpl/dt/givens_rotation.hpp>
 #include <hbrs/mpl/dt/range.hpp>
 #include <hbrs/mpl/fn/transpose.hpp>
 #include <cmath>
@@ -55,16 +56,20 @@ template<
 	typename T1,
 	typename T2,
 	typename std::enable_if_t<
-		std::is_same_v< hana::tag_of_t<T1>, rtsam_tag     > && std::is_same_v< hana::tag_of_t<T2>, rtsam_tag     > ||
-		std::is_same_v< hana::tag_of_t<T1>, rtsam_tag     > && std::is_same_v< hana::tag_of_t<T2>, submatrix_tag > ||
-		std::is_same_v< hana::tag_of_t<T1>, rtsam_tag     > && std::is_same_v< hana::tag_of_t<T2>, rtsacv_tag    > ||
-		std::is_same_v< hana::tag_of_t<T1>, submatrix_tag > && std::is_same_v< hana::tag_of_t<T2>, rtsam_tag     > ||
-		std::is_same_v< hana::tag_of_t<T1>, submatrix_tag > && std::is_same_v< hana::tag_of_t<T2>, submatrix_tag > ||
-		std::is_same_v< hana::tag_of_t<T1>, submatrix_tag > && std::is_same_v< hana::tag_of_t<T2>, rtsacv_tag    > ||
-		std::is_same_v< hana::tag_of_t<T1>, rtsacv_tag    > && std::is_same_v< hana::tag_of_t<T2>, rtsarv_tag    > ||
-		std::is_same_v< hana::tag_of_t<T1>, rtsarv_tag    > && std::is_same_v< hana::tag_of_t<T2>, rtsam_tag     > ||
-		std::is_same_v< hana::tag_of_t<T1>, rtsarv_tag    > && std::is_same_v< hana::tag_of_t<T2>, rtsacv_tag    > ||
-		std::is_same_v< hana::tag_of_t<T1>, rtsarv_tag    > && std::is_same_v< hana::tag_of_t<T2>, submatrix_tag >
+		std::is_same_v< hana::tag_of_t<T1>, rtsam_tag           > && std::is_same_v< hana::tag_of_t<T2>, rtsam_tag           > ||
+		std::is_same_v< hana::tag_of_t<T1>, rtsam_tag           > && std::is_same_v< hana::tag_of_t<T2>, submatrix_tag       > ||
+		std::is_same_v< hana::tag_of_t<T1>, rtsam_tag           > && std::is_same_v< hana::tag_of_t<T2>, rtsacv_tag          > ||
+		std::is_same_v< hana::tag_of_t<T1>, rtsam_tag           > && std::is_same_v< hana::tag_of_t<T2>, givens_rotation_tag > ||
+		std::is_same_v< hana::tag_of_t<T1>, submatrix_tag       > && std::is_same_v< hana::tag_of_t<T2>, rtsam_tag           > ||
+		std::is_same_v< hana::tag_of_t<T1>, submatrix_tag       > && std::is_same_v< hana::tag_of_t<T2>, submatrix_tag       > ||
+		std::is_same_v< hana::tag_of_t<T1>, submatrix_tag       > && std::is_same_v< hana::tag_of_t<T2>, rtsacv_tag          > ||
+		std::is_same_v< hana::tag_of_t<T1>, submatrix_tag       > && std::is_same_v< hana::tag_of_t<T2>, givens_rotation_tag > ||
+		std::is_same_v< hana::tag_of_t<T1>, rtsacv_tag          > && std::is_same_v< hana::tag_of_t<T2>, rtsarv_tag          > ||
+		std::is_same_v< hana::tag_of_t<T1>, rtsarv_tag          > && std::is_same_v< hana::tag_of_t<T2>, rtsam_tag           > ||
+		std::is_same_v< hana::tag_of_t<T1>, rtsarv_tag          > && std::is_same_v< hana::tag_of_t<T2>, submatrix_tag       > ||
+		std::is_same_v< hana::tag_of_t<T1>, rtsarv_tag          > && std::is_same_v< hana::tag_of_t<T2>, rtsacv_tag          > ||
+		std::is_same_v< hana::tag_of_t<T1>, givens_rotation_tag > && std::is_same_v< hana::tag_of_t<T2>, rtsam_tag           > ||
+		std::is_same_v< hana::tag_of_t<T1>, givens_rotation_tag > && std::is_same_v< hana::tag_of_t<T2>, submatrix_tag       >
 	>* = nullptr
 >
 decltype(auto)
@@ -302,6 +307,126 @@ struct multiply_impl_ring_rtsacv {
 	}
 };
 
+/*
+ * Chapter 5.1.9 (Applying Givens Rotations) on page 241
+ * A = G(i,k,theta)^T * A
+ *              --     --T
+ *              |       |
+ *              |  c s  |
+ * A([i,k],:) = |       | * A([i,k],:)
+ *              | -s c  |
+ *              |       |
+ *              --     --
+ *
+ * Apply the Givens roation on A and return A.
+ */
+struct multiply_impl_givens_rotation_matrix {
+	template<
+		typename Ring,
+		storage_order Order
+	>
+	/* constexpr */ 
+	decltype(auto)
+	operator()(givens_rotation<Ring> const& G, rtsam<Ring,Order> const& A) const {
+		return impl(G,A, std::integral_constant<storage_order, Order>{});
+	}
+
+	template<
+		typename Ring,
+		storage_order Order,
+		typename Offset,
+		typename Size
+	>
+	decltype(auto)
+	operator()(givens_rotation<Ring> const& G, submatrix<rtsam<Ring,Order>&, Offset, Size> const& A) const {
+		return impl(G,A, std::integral_constant<storage_order, Order>{});
+	}
+private:
+	template<
+		typename Ring,
+		storage_order Order,
+		typename Matrix
+	>
+	decltype(auto)
+	impl(givens_rotation<Ring> const& G, Matrix const& A, std::integral_constant<storage_order, Order>) const {
+		decltype(auto) i {G.i()};
+		decltype(auto) k {G.k()};
+		decltype(auto) theta {G.theta()};
+
+		BOOST_ASSERT(i < A.m());
+		BOOST_ASSERT(k < A.m());
+
+		rtsam<Ring,Order> R{A};
+		for (std::size_t j {0}; j <= R.n() - 1; ++j) {
+			double const tau1 {R.at(make_matrix_index(i, j))};
+			double const tau2 {R.at(make_matrix_index(k, j))};
+			R.at(make_matrix_index(i, j)) = theta.at(0) * tau1 - theta.at(1) * tau2;
+			R.at(make_matrix_index(k, j)) = theta.at(1) * tau1 + theta.at(0) * tau2;
+		}
+		return R;
+	}
+};
+
+/*
+ * Chapter 5.1.9 (Applying Givens Rotations) on page 241
+ * A = A * G(i,k,theta)
+ *                           --     --
+ *                           |       |
+ *                           |  c s  |
+ * A(:,[i,k]) = A(:,[i,k]) * |       |
+ *                           | -s c  |
+ *                           |       |
+ *                           --     --
+ *
+ * Apply the Givens roation on A and return A.
+ */
+struct multiply_impl_matrix_givens_rotation {
+	template<
+		typename Ring,
+		storage_order Order
+	>
+	/* constexpr */ 
+	decltype(auto)
+	operator()(rtsam<Ring,Order> const& A, givens_rotation<Ring> const& G) const {
+		return impl(A,G, std::integral_constant<storage_order, Order>{});
+	}
+
+	template<
+		typename Ring,
+		storage_order Order,
+		typename Offset,
+		typename Size
+	>
+	decltype(auto)
+	operator()(submatrix<rtsam<Ring,Order>&, Offset, Size> const& A, givens_rotation<Ring> const& G) const {
+		return impl(A,G, std::integral_constant<storage_order, Order>{});
+	}
+private:
+	template<
+		typename Ring,
+		storage_order Order,
+		typename Matrix
+	>
+	decltype(auto)
+	impl(Matrix const& A, givens_rotation<Ring> const& G, std::integral_constant<storage_order, Order>) const {
+		decltype(auto) i {G.i()};
+		decltype(auto) k {G.k()};
+		decltype(auto) theta {G.theta()};
+
+		BOOST_ASSERT(i < A.n());
+		BOOST_ASSERT(k < A.n());
+
+		rtsam<Ring,Order> R{A};
+		for (std::size_t j {0}; j <= R.m() - 1; ++j) {
+			double const tau1 {R.at(make_matrix_index(j, i))};
+			double const tau2 {R.at(make_matrix_index(j, k))};
+			R.at(make_matrix_index(j, i)) = theta.at(0) * tau1 - theta.at(1) * tau2;
+			R.at(make_matrix_index(j, k)) = theta.at(1) * tau1 + theta.at(0) * tau2;
+		}
+		return R;
+	}
+};
+
 /* namespace detail */ }
 HBRS_MPL_NAMESPACE_END
 
@@ -314,7 +439,9 @@ HBRS_MPL_NAMESPACE_END
 		hbrs::mpl::detail::multiply_impl_rtsam_ring{},                                                                 \
 		hbrs::mpl::detail::multiply_impl_ring_rtsam{},                                                                 \
 		hbrs::mpl::detail::multiply_impl_rtsacv_ring{},                                                                \
-		hbrs::mpl::detail::multiply_impl_ring_rtsacv{}                                                                 \
+		hbrs::mpl::detail::multiply_impl_ring_rtsacv{},                                                                \
+		hbrs::mpl::detail::multiply_impl_givens_rotation_matrix{},                                                     \
+		hbrs::mpl::detail::multiply_impl_matrix_givens_rotation{}                                                      \
 	)
 
 #endif // !HBRS_MPL_FUSE_HBRS_MPL_FN_MULTIPLY_HPP

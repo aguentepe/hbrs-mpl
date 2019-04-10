@@ -129,15 +129,15 @@ struct svd_impl {
 						zeroFound = true;
 						if (i < n-1 - q) {
 							for (auto j {i + 1}; j < n - q; ++j) {
-								auto cs(givens(-B.at(make_matrix_index(j,j)), B.at(make_matrix_index(i,j))));
-								GivensRotate(cs, B, i, j);
-								GivensRotate(U, cs, i, j);
+								auto theta(givens(-B.at(make_matrix_index(j,j)), B.at(make_matrix_index(i,j))));
+								B = G(i, j, theta) * B;
+								U = U * G(i, j, theta);
 							}
 						} else {
 							for (auto j {n-1 - q - 1}; j >= p; --j) {
-								auto cs(givens(B.at(make_matrix_index(j,j)), B.at(make_matrix_index(j, n-1 - q))));
-								GivensRotate(B, cs, j, n-1 - q);
-								GivensRotate(V, cs, j, n-1 - q);
+								auto theta(givens(B.at(make_matrix_index(j,j)), B.at(make_matrix_index(j, n-1 - q))));
+								B = B * G(j, n-1 - q, theta);
+								V = V * G(j, n-1 - q, theta);
 							}
 						}
 					}
@@ -208,18 +208,18 @@ private:
 			 * implemented it the way it is suggested on that page.
 			 */
 			{
-				auto cs { givens(y, z) }; // Determine c and s
-				/* B22 = B22 * G(k, k + 1, B22.n(), cs); // mathematical notation */
-				GivensRotate(B22, cs, k, k + 1);
-				GivensRotate(V, cs, p+k, p+k + 1);
+				// Determine c = cos(theta) and s = sin(theta) such that
+				auto const theta { givens(y, z) };
+				B22 = B22 * G(  k,   k + 1, theta);
+				V   = V   * G(p+k, p+k + 1, theta);
 			}
 			y = B22.at(make_matrix_index(k, k));
 			z = B22.at(make_matrix_index(k + 1, k));
 			{
-				auto cs { givens(y, z) }; // Determine c and s
-				/* B22 = transpose(G(k, k + 1, B22.m(), cs)) * B22; // mathematical notation */
-				GivensRotate(cs, B22, k, k + 1);
-				GivensRotate(U, cs, p+k, p+k + 1);
+				// Determine c = cos(theta) and s = sin(theta) such that
+				auto const theta { givens(y, z) };
+				B22 = G(k, k + 1, theta) * B22;
+				U   = U * G(p+k, p+k + 1, theta);
 			}
 			if (k + 1 < B22.n()-1) {
 				y = B22.at(make_matrix_index(k, k + 1));
