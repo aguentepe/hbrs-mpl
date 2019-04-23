@@ -24,7 +24,7 @@
 #include <hbrs/mpl/preprocessor/core.hpp>
 
 #include <hbrs/mpl/fn/at.hpp>
-#include <hbrs/mpl/fn/n.hpp>
+#include <hbrs/mpl/fn/m.hpp>
 #include <hbrs/mpl/fn/size.hpp>
 
 #include <boost/hana/core/make.hpp>
@@ -80,8 +80,8 @@ struct smr {
 	
 	constexpr auto
 	length() const {
-		using mpl::n;
-		return (*n)(size(a_));
+		using mpl::m;
+		return (*m)(size(a_));
 	}
 	
 	template<typename Index_>
