@@ -43,6 +43,7 @@ struct almost_equal_impl_rtsam {
 		}
 		for (std::size_t i {0}; i < M1.m(); ++i) {
 			for (std::size_t j {0}; j < M1.n(); ++j) {
+				//TODO: almost_equal_double durch almost_equal ersetzen
 				if (!almost_equal_double(M1.at(make_matrix_index(i, j)), M2.at(make_matrix_index(i, j)))) {
 					return false;
 				}
