@@ -190,7 +190,7 @@ private:
 		 *
 		 * Calculate mu.
 		 */
-		/* auto const T {transpose(B22) * B22}; */ // FIXME
+		/* auto const T {transpose(B22) * B22}; */ // TODO: T can be const
 		auto                                 T   { transpose(B22) * B22 };
 		range<std::size_t,std::size_t> const T22 { T.m() - 2, T.m() - 1 };
 		auto                           const l   { eigenvalueOf2x2Matrix(T(T22, T22)) };
