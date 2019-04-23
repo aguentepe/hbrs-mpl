@@ -210,11 +210,11 @@ struct submatrix {
 	constexpr auto
 	operator[](Index && i) & {
 		return make_subsequence(
-			smr<submatrix &, std::decay_t<Index>>{*this, HBRS_MPL_FWD(i)},
-			/* (*n)(o_), */
-			o_.n(),
-			/* (*n)(sz_) */
-			sz_.n()
+			smr<std::decay_t<Matrix> &, std::decay_t<Index>>{mat_, HBRS_MPL_FWD(i) + o_.n()},
+			/* (*m)(o_), */
+			o_.m(),
+			/* (*m)(sz_) */
+			sz_.m()
 		);
 	}
 	
@@ -222,23 +222,11 @@ struct submatrix {
 	constexpr auto
 	operator[](Index && i) const& {
 		return make_subsequence(
-			smr<submatrix const&, std::decay_t<Index>>{*this, HBRS_MPL_FWD(i)},
-			/* (*n)(o_), */
-			o_.n(),
-			/* (*n)(sz_) */
-			sz_.n()
-		);
-	}
-	
-	template<typename Index>
-	constexpr auto
-	operator[](Index && i) && {
-		return make_subsequence(
-			make_smr(std::move(*this), HBRS_MPL_FWD(i)),
-			/* (*n)(o_), */
-			o_.n(),
-			/* (*n)(sz_) */
-			sz_.n()
+			smr<std::decay_t<Matrix> const&, std::decay_t<Index>>{mat_, HBRS_MPL_FWD(i) + o_.n()},
+			/* (*m)(o_), */
+			o_.m(),
+			/* (*m)(sz_) */
+			sz_.m()
 		);
 	}
 	
