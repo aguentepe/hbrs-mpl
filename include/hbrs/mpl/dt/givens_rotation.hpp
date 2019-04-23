@@ -73,7 +73,7 @@ struct make_impl<hbrs::mpl::givens_rotation_tag> {
 	template <typename Ring>
 	static hbrs::mpl::givens_rotation<Ring>
 	apply(hana::basic_type<Ring>, std::size_t i, std::size_t k, std::array<Ring, 2> theta) {
-		return {theta};
+		return {i,k,theta};
 	}
 };
 
