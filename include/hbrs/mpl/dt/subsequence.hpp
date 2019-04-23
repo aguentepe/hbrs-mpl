@@ -38,11 +38,11 @@ struct subsequence {
 	subsequence(Sequence_ && seq, Offset_ && o, Size_ && sz)
 	: seq_{HBRS_MPL_FWD(seq)}, o_{HBRS_MPL_FWD(o)}, sz_{HBRS_MPL_FWD(sz)}
 	{
-		/* BOOST_ASSERT( */
-		/* 	/1* (*less_equal)( *1/ */
-		/* 	/1* 	plus(o_, sz_), hbrs::mpl::size(seq_) *1/ */
-		/* 	/1* ) *1/ */
-		/* ); */
+		BOOST_ASSERT(
+			(*less_equal)(
+				plus(o_, sz_), hbrs::mpl::size(seq_)
+			)
+		);
 	}
 	
 	constexpr 
