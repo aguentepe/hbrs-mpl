@@ -308,19 +308,6 @@ struct multiply_impl_ring_rtsacv {
 	}
 };
 
-/*
- * Chapter 5.1.9 (Applying Givens Rotations) on page 241
- * A = G(i,k,theta)^T * A
- *              --     --T
- *              |       |
- *              |  c s  |
- * A([i,k],:) = |       | * A([i,k],:)
- *              | -s c  |
- *              |       |
- *              --     --
- *
- * Apply the Givens roation on A and return A.
- */
 struct multiply_impl_givens_rotation_matrix {
 	template<
 		typename Ring,
@@ -329,7 +316,7 @@ struct multiply_impl_givens_rotation_matrix {
 	/* constexpr */ 
 	decltype(auto)
 	operator()(givens_rotation<Ring> const& G, rtsam<Ring,Order> const& A) const {
-		return impl(G,A, std::integral_constant<storage_order, Order>{});
+		return givens_rotation_expression<givens_rotation<Ring> const&, rtsam<Ring,Order> const&>(G,A);
 	}
 
 	template<
@@ -340,47 +327,10 @@ struct multiply_impl_givens_rotation_matrix {
 	>
 	decltype(auto)
 	operator()(givens_rotation<Ring> const& G, submatrix<rtsam<Ring,Order>&, Offset, Size> const& A) const {
-		return impl(G,A, std::integral_constant<storage_order, Order>{});
-	}
-private:
-	template<
-		typename Ring,
-		storage_order Order,
-		typename Matrix
-	>
-	decltype(auto)
-	impl(givens_rotation<Ring> const& G, Matrix const& A, std::integral_constant<storage_order, Order>) const {
-		decltype(auto) i {G.i()};
-		decltype(auto) k {G.k()};
-		decltype(auto) theta {G.theta()};
-
-		BOOST_ASSERT(i < A.m());
-		BOOST_ASSERT(k < A.m());
-
-		rtsam<Ring,Order> R{A};
-		for (std::size_t j {0}; j <= R.n() - 1; ++j) {
-			double const tau1 {R.at(make_matrix_index(i, j))};
-			double const tau2 {R.at(make_matrix_index(k, j))};
-			R.at(make_matrix_index(i, j)) = theta.at(0) * tau1 - theta.at(1) * tau2;
-			R.at(make_matrix_index(k, j)) = theta.at(1) * tau1 + theta.at(0) * tau2;
-		}
-		return R;
+		return givens_rotation_expression<givens_rotation<Ring> const&, submatrix<rtsam<Ring,Order>&, Offset, Size> const&>(G,A);
 	}
 };
 
-/*
- * Chapter 5.1.9 (Applying Givens Rotations) on page 241
- * A = A * G(i,k,theta)
- *                           --     --
- *                           |       |
- *                           |  c s  |
- * A(:,[i,k]) = A(:,[i,k]) * |       |
- *                           | -s c  |
- *                           |       |
- *                           --     --
- *
- * Apply the Givens roation on A and return A.
- */
 struct multiply_impl_matrix_givens_rotation {
 	template<
 		typename Ring,
@@ -389,7 +339,7 @@ struct multiply_impl_matrix_givens_rotation {
 	/* constexpr */ 
 	decltype(auto)
 	operator()(rtsam<Ring,Order> const& A, givens_rotation<Ring> const& G) const {
-		return impl(A,G, std::integral_constant<storage_order, Order>{});
+		return givens_rotation_expression<rtsam<Ring,Order> const&, givens_rotation<Ring> const&>(A,G);
 	}
 
 	template<
@@ -400,31 +350,7 @@ struct multiply_impl_matrix_givens_rotation {
 	>
 	decltype(auto)
 	operator()(submatrix<rtsam<Ring,Order>&, Offset, Size> const& A, givens_rotation<Ring> const& G) const {
-		return impl(A,G, std::integral_constant<storage_order, Order>{});
-	}
-private:
-	template<
-		typename Ring,
-		storage_order Order,
-		typename Matrix
-	>
-	decltype(auto)
-	impl(Matrix const& A, givens_rotation<Ring> const& G, std::integral_constant<storage_order, Order>) const {
-		decltype(auto) i {G.i()};
-		decltype(auto) k {G.k()};
-		decltype(auto) theta {G.theta()};
-
-		BOOST_ASSERT(i < A.n());
-		BOOST_ASSERT(k < A.n());
-
-		rtsam<Ring,Order> R{A};
-		for (std::size_t j {0}; j <= R.m() - 1; ++j) {
-			double const tau1 {R.at(make_matrix_index(j, i))};
-			double const tau2 {R.at(make_matrix_index(j, k))};
-			R.at(make_matrix_index(j, i)) = theta.at(0) * tau1 - theta.at(1) * tau2;
-			R.at(make_matrix_index(j, k)) = theta.at(1) * tau1 + theta.at(0) * tau2;
-		}
-		return R;
+		return givens_rotation_expression<submatrix<rtsam<Ring,Order>&, Offset, Size> const&, givens_rotation<Ring> const&>(A,G);
 	}
 };
 

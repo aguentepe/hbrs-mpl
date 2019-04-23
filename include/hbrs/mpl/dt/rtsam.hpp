@@ -30,6 +30,7 @@
 #include <hbrs/mpl/dt/range.hpp>
 #include <hbrs/mpl/dt/storage_order.hpp>
 #include <hbrs/mpl/dt/exception.hpp>
+#include <hbrs/mpl/dt/givens_rotation.hpp>
 #include <hbrs/mpl/detail/translate_index.hpp>
 #include <vector>
 
@@ -81,7 +82,77 @@ struct rtsam {
 	operator=(rtsam const&) = default;
 	rtsam&
 	operator=(rtsam &&) = default;
-	
+
+	/*
+	 * Chapter 5.1.9 (Applying Givens Rotations) on page 241
+	 * A = G(i,k,theta)^T * A
+	 *              --     --T
+	 *              |       |
+	 *              |  c s  |
+	 * A([i,k],:) = |       | * A([i,k],:)
+	 *              | -s c  |
+	 *              |       |
+	 *              --     --
+	 *
+	 * Apply the Givens roation on A and return A.
+	 */
+	rtsam&
+	operator=(detail::givens_rotation_expression<givens_rotation<Ring> const&, rtsam<Ring,Order> const&> const& e) {
+		if (&(e.t2()) != this) {
+			*this = e.t2();
+		}
+
+		decltype(auto) i     {e.t1().i()};
+		decltype(auto) k     {e.t1().k()};
+		decltype(auto) theta {e.t1().theta()};
+
+		BOOST_ASSERT(i < m());
+		BOOST_ASSERT(k < m());
+
+		for (std::size_t j {0}; j <= n() - 1; ++j) {
+			double const tau1 {at(make_matrix_index(i, j))};
+			double const tau2 {at(make_matrix_index(k, j))};
+			at(make_matrix_index(i, j)) = theta.at(0) * tau1 - theta.at(1) * tau2;
+			at(make_matrix_index(k, j)) = theta.at(1) * tau1 + theta.at(0) * tau2;
+		}
+		return *this;
+	}
+
+	/*
+	 * Chapter 5.1.9 (Applying Givens Rotations) on page 241
+	 * A = A * G(i,k,theta)
+	 *                           --     --
+	 *                           |       |
+	 *                           |  c s  |
+	 * A(:,[i,k]) = A(:,[i,k]) * |       |
+	 *                           | -s c  |
+	 *                           |       |
+	 *                           --     --
+	 *
+	 * Apply the Givens roation on A and return A.
+	 */
+	rtsam&
+	operator=(detail::givens_rotation_expression<rtsam<Ring,Order> const&, givens_rotation<Ring> const&> const& e) {
+		if (&(e.t1()) != this) {
+			*this = e.t1();
+		}
+
+		decltype(auto) i     {e.t2().i()};
+		decltype(auto) k     {e.t2().k()};
+		decltype(auto) theta {e.t2().theta()};
+
+		BOOST_ASSERT(i < n());
+		BOOST_ASSERT(k < n());
+
+		for (std::size_t j {0}; j <= m() - 1; ++j) {
+			auto const tau1 {at(make_matrix_index(j, i))};
+			auto const tau2 {at(make_matrix_index(j, k))};
+			at(make_matrix_index(j, i)) = theta.at(0) * tau1 - theta.at(1) * tau2;
+			at(make_matrix_index(j, k)) = theta.at(1) * tau1 + theta.at(0) * tau2;
+		}
+		return *this;
+	}
+
 	auto const&
 	size() const { return size_; };
 	

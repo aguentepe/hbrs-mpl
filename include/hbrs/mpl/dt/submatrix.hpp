@@ -25,6 +25,7 @@
 #include <hbrs/mpl/dt/subsequence.hpp>
 #include <hbrs/mpl/dt/matrix_index.hpp>
 #include <hbrs/mpl/dt/smr.hpp>
+#include <hbrs/mpl/dt/givens_rotation.hpp>
 
 #include <hbrs/mpl/fn/at.hpp>
 #include <hbrs/mpl/fn/size.hpp>
@@ -66,16 +67,99 @@ struct submatrix {
 	submatrix(submatrix const&) = default;
 	constexpr 
 	submatrix(submatrix &&) = default;
-	
-	template<typename Matrix_>
+
 	submatrix&
-	operator=(Matrix_ && M) {
-		BOOST_ASSERT(m() == HBRS_MPL_FWD(M).m());
-		BOOST_ASSERT(n() == HBRS_MPL_FWD(M).n());
-		for (std::size_t i {0}; i < HBRS_MPL_FWD(M).m(); ++i) {
-			for (std::size_t j {0}; j < HBRS_MPL_FWD(M).n(); ++j) {
-				at(make_matrix_index(i,j)) = HBRS_MPL_FWD(M).at(make_matrix_index(i,j));
+	operator=(submatrix const& M) {
+		BOOST_ASSERT(m() == M.m());
+		BOOST_ASSERT(n() == M.n());
+		for (std::size_t i {0}; i < M.m(); ++i) {
+			for (std::size_t j {0}; j < M.n(); ++j) {
+				at(make_matrix_index(i,j)) = M.at(make_matrix_index(i,j));
 			}
+		}
+		return *this;
+	}
+
+	submatrix&
+	operator=(std::decay_t<Matrix> const& M) {
+		BOOST_ASSERT(m() == M.m());
+		BOOST_ASSERT(n() == M.n());
+		for (std::size_t i {0}; i < M.m(); ++i) {
+			for (std::size_t j {0}; j < M.n(); ++j) {
+				at(make_matrix_index(i,j)) = M.at(make_matrix_index(i,j));
+			}
+		}
+		return *this;
+	}
+
+	/*
+	 * Chapter 5.1.9 (Applying Givens Rotations) on page 241
+	 * A = G(i,k,theta)^T * A
+	 *              --     --T
+	 *              |       |
+	 *              |  c s  |
+	 * A([i,k],:) = |       | * A([i,k],:)
+	 *              | -s c  |
+	 *              |       |
+	 *              --     --
+	 *
+	 * Apply the Givens roation on A and return A.
+	 */
+	template<typename Ring>
+	submatrix&
+	operator=(detail::givens_rotation_expression<givens_rotation<Ring> const&, submatrix<Matrix,Offset,Size> const&> const& e) {
+		if (&(e.t2()) != this) {
+			*this = e.t2();
+		}
+
+		decltype(auto) i     {e.t1().i()};
+		decltype(auto) k     {e.t1().k()};
+		decltype(auto) theta {e.t1().theta()};
+
+		BOOST_ASSERT(i < m());
+		BOOST_ASSERT(k < m());
+
+		for (std::size_t j {0}; j <= n() - 1; ++j) {
+			double const tau1 {at(make_matrix_index(i, j))};
+			double const tau2 {at(make_matrix_index(k, j))};
+			at(make_matrix_index(i, j)) = theta.at(0) * tau1 - theta.at(1) * tau2;
+			at(make_matrix_index(k, j)) = theta.at(1) * tau1 + theta.at(0) * tau2;
+		}
+		return *this;
+	}
+
+	/*
+	 * Chapter 5.1.9 (Applying Givens Rotations) on page 241
+	 * A = A * G(i,k,theta)
+	 *                           --     --
+	 *                           |       |
+	 *                           |  c s  |
+	 * A(:,[i,k]) = A(:,[i,k]) * |       |
+	 *                           | -s c  |
+	 *                           |       |
+	 *                           --     --
+	 *
+	 * Apply the Givens roation on A and return A.
+	 */
+	template<typename Ring>
+	submatrix&
+	operator=(detail::givens_rotation_expression<submatrix<Matrix,Offset,Size> const&, givens_rotation<Ring> const&> const& e) {
+		if (&(e.t1()) != this) {
+			*this = e.t1();
+		}
+
+		decltype(auto) i     {e.t2().i()};
+		decltype(auto) k     {e.t2().k()};
+		decltype(auto) theta {e.t2().theta()};
+
+		BOOST_ASSERT(i < n());
+		BOOST_ASSERT(k < n());
+
+		for (std::size_t j {0}; j <= m() - 1; ++j) {
+			auto const tau1 {at(make_matrix_index(j, i))};
+			auto const tau2 {at(make_matrix_index(j, k))};
+			at(make_matrix_index(j, i)) = theta.at(0) * tau1 - theta.at(1) * tau2;
+			at(make_matrix_index(j, k)) = theta.at(1) * tau1 + theta.at(0) * tau2;
 		}
 		return *this;
 	}
