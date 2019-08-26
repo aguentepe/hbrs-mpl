@@ -118,6 +118,22 @@ private:
 	matrix_size<std::size_t, std::size_t> size_;
 };
 
+template<
+	typename Ring,
+	storage_order Order
+>
+std::ostream&
+operator<< (std::ostream& os, rtsam<Ring,Order> const& M) {
+    os << '-' << std::endl;
+    for (std::size_t i {0}; i < M.m(); ++i) {
+        for (std::size_t j {0}; j < M.n(); ++j) {
+            os << M.at(make_matrix_index(i, j)) << "\t\t";
+		}
+        os << std::endl;
+    }
+    return os << '-' << std::endl;
+}
+
 HBRS_MPL_NAMESPACE_END
 
 namespace boost { namespace hana {
