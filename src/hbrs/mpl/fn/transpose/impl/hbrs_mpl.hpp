@@ -22,6 +22,8 @@
 #include <hbrs/mpl/core/preprocessor.hpp>
 #include <hbrs/mpl/dt/srv.hpp>
 #include <hbrs/mpl/dt/scv.hpp>
+#include <hbrs/mpl/dt/rtsam.hpp>
+#include <hbrs/mpl/dt/submatrix.hpp>
 
 HBRS_MPL_NAMESPACE_BEGIN
 namespace hana = boost::hana;
@@ -47,6 +49,41 @@ template <
 constexpr auto 
 transpose_impl_scv::operator()(Vector && v) const {
 	return make_srv(HBRS_MPL_FWD(v));
+}
+
+
+template<
+	typename Ring,
+	storage_order Order
+>
+decltype(auto)
+transpose_impl_matrix::operator()(rtsam<Ring,Order> const& M) const {
+	return impl(M, hana::type_c<Ring>);
+}
+
+template<
+	typename Ring,
+	storage_order Order,
+	typename Offset,
+	typename Size
+>
+decltype(auto)
+transpose_impl_matrix::operator()(submatrix<rtsam<Ring,Order>&, Offset,Size> const& M) const {
+	return impl(M, hana::type_c<Ring>);
+}
+
+template<typename Ring, typename Matrix>
+decltype(auto)
+transpose_impl_matrix::impl(Matrix const& M, hana::basic_type<Ring>) const {
+	typedef std::decay_t<Ring> _Ring_;
+	rtsam<_Ring_, storage_order::row_major> result {M.size().n(), M.size().m()};
+	//TODO: Implement code to choose best storage_order
+	for (std::size_t i {0}; i < m(size(result)); ++i) {
+		for (std::size_t j {0}; j < n(size(result)); ++j) {
+			result.at(make_matrix_index(i, j)) = M.at(make_matrix_index(j, i));
+		}
+	}
+	return result;
 }
 
 /* namespace detail */ }

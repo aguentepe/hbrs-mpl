@@ -20,6 +20,8 @@
 #include <hbrs/mpl/config.hpp>
 #include <hbrs/mpl/dt/srv/fwd.hpp>
 #include <hbrs/mpl/dt/scv/fwd.hpp>
+#include <hbrs/mpl/dt/rtsam/fwd.hpp>
+#include <hbrs/mpl/dt/submatrix/fwd.hpp>
 #include <boost/hana/tuple.hpp>
 
 HBRS_MPL_NAMESPACE_BEGIN
@@ -48,12 +50,36 @@ struct transpose_impl_scv {
 	operator()(Vector && v) const;
 };
 
+struct transpose_impl_matrix {
+//TODO: Rename to e.g. transpose_impl_rtsam
+	template<
+		typename Ring,
+		storage_order Order
+	>
+    decltype(auto)
+    operator()(rtsam<Ring,Order> const& M) const;
+
+	template<
+		typename Ring,
+		storage_order Order,
+		typename Offset,
+		typename Size
+	>
+	decltype(auto)
+	operator()(submatrix<rtsam<Ring,Order>&, Offset,Size> const& M) const;
+
+private:
+	template<typename Ring, typename Matrix>
+	decltype(auto)
+	impl(Matrix const& Mp, hana::basic_type<Ring>) const;
+};
 /* namespace detail */ }
 HBRS_MPL_NAMESPACE_END
 
 #define HBRS_MPL_FN_TRANSPOSE_IMPLS_HBRS_MPL boost::hana::make_tuple(                                                  \
 		hbrs::mpl::detail::transpose_impl_srv{},                                                                       \
-		hbrs::mpl::detail::transpose_impl_scv{}                                                                        \
+		hbrs::mpl::detail::transpose_impl_scv{},                                                                       \
+		hbrs::mpl::detail::transpose_impl_matrix{}                                                                     \
 	)
 
 #endif // !HBRS_MPL_FN_TRANSPOSE_FWD_HBRS_MPL_HPP
