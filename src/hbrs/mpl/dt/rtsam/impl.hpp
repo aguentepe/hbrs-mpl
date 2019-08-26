@@ -23,6 +23,8 @@
 #include <hbrs/mpl/dt/matrix_index.hpp>
 #include <hbrs/mpl/dt/matrix_size.hpp>
 #include <hbrs/mpl/dt/smr.hpp>
+#include <hbrs/mpl/dt/rtsacv.hpp>
+#include <hbrs/mpl/dt/rtsarv.hpp>
 #include <hbrs/mpl/dt/storage_order.hpp>
 #include <hbrs/mpl/fn/m.hpp>
 #include <hbrs/mpl/fn/n.hpp>
@@ -55,6 +57,19 @@ struct rtsam {
 	}
 	
 	rtsam(std::size_t m, std::size_t n) : data_(m * n, Ring{0}), size_{m,n} {}
+
+	explicit rtsam(submatrix<rtsam<Ring,Order>&, matrix_index<std::size_t,std::size_t>, matrix_size<std::size_t,std::size_t>> const& M)
+	: rtsam(M.size()) {
+		for (std::size_t i{0}; i < m(size()); ++i) {
+			for (std::size_t j{0}; j < n(size()); ++j) {
+				at(make_matrix_index(i,j)) = M.at(make_matrix_index(i,j));
+			}
+		}
+	}
+
+    explicit rtsam(rtsacv<Ring> const& v) : data_ {v.data()}, size_{v.m(), 1} {}
+
+    explicit rtsam(rtsarv<Ring> const& v) : data_ {v.data()}, size_{1, v.n()} {}
 	
 	rtsam(rtsam const&) = default;
 	rtsam(rtsam &&) = default;
