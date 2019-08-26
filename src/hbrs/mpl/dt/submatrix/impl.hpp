@@ -63,11 +63,30 @@ struct submatrix {
 	submatrix(submatrix const&) = default;
 	constexpr 
 	submatrix(submatrix &&) = default;
-	
-	constexpr submatrix&
-	operator=(submatrix const&) = default;
-	constexpr submatrix&
-	operator=(submatrix &&) = default;
+
+	submatrix&
+	operator=(submatrix const& M) {
+		BOOST_ASSERT((*m)(sz_) == M.size().m());
+		BOOST_ASSERT((*n)(sz_) == M.size().n());
+		for (std::size_t i {0}; i < M.size().m(); ++i) {
+			for (std::size_t j {0}; j < M.size().n(); ++j) {
+				at(make_matrix_index(i,j)) = M.at(make_matrix_index(i,j));
+			}
+		}
+		return *this;
+	}
+
+	submatrix&
+	operator=(std::decay_t<Matrix> const& M) {
+		BOOST_ASSERT((*m)(sz_) == M.size().m());
+		BOOST_ASSERT((*n)(sz_) == M.size().n());
+		for (std::size_t i {0}; i < M.size().m(); ++i) {
+			for (std::size_t j {0}; j < M.size().n(); ++j) {
+				at(make_matrix_index(i,j)) = M.at(make_matrix_index(i,j));
+			}
+		}
+		return *this;
+	}
 	
 	constexpr decltype(auto)
 	size() const { return (sz_); };
