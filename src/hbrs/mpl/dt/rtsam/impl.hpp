@@ -88,17 +88,17 @@ struct rtsam {
 	template<typename Index>
 	decltype(auto)
 	at(Index && i) {
-		return data_[
+		return data_.at(
 			detail::translate_index(size_, HBRS_MPL_FWD(i), storage_order_c<Order>)
-		];
+		);
 	}
 	
 	template<typename Index>
 	decltype(auto)
 	at(Index && i) const {
-		return data_[
+		return data_.at(
 			detail::translate_index(size_, HBRS_MPL_FWD(i), storage_order_c<Order>)
-		];
+		);
 	}
 	
 	template<typename Index>
