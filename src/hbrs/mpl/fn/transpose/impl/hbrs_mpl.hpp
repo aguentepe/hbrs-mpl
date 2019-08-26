@@ -24,6 +24,8 @@
 #include <hbrs/mpl/dt/scv.hpp>
 #include <hbrs/mpl/dt/rtsam.hpp>
 #include <hbrs/mpl/dt/submatrix.hpp>
+#include <hbrs/mpl/dt/rtsacv.hpp>
+#include <hbrs/mpl/dt/rtsarv.hpp>
 
 HBRS_MPL_NAMESPACE_BEGIN
 namespace hana = boost::hana;
@@ -39,6 +41,7 @@ constexpr auto
 transpose_impl_srv::operator()(Vector && v) const {
 	return make_scv(HBRS_MPL_FWD(v));
 }
+
 
 template <
 	typename Vector,
@@ -84,6 +87,20 @@ transpose_impl_matrix::impl(Matrix const& M, hana::basic_type<Ring>) const {
 		}
 	}
 	return result;
+}
+
+
+template<typename Ring>
+decltype(auto)
+transpose_impl_rtsacv::operator()(rtsacv<Ring> const& v) const {
+	return rtsarv(v);
+}
+
+
+template<typename Ring>
+decltype(auto)
+transpose_impl_rtsarv::operator()(rtsarv<Ring> const& v) const {
+	return v.transpose();
 }
 
 /* namespace detail */ }
