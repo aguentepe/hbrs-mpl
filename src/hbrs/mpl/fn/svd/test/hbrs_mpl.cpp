@@ -34,6 +34,7 @@
 #include <hbrs/mpl/fn/svd.hpp>
 #include <hbrs/mpl/fn/transpose.hpp>
 #include <hbrs/mpl/fn/select.hpp>
+#include <hbrs/mpl/fn/almost_equal.hpp>
 #ifdef HBRS_MPL_ENABLE_ELEMENTAL
 	#include <hbrs/mpl/dt/el_matrix.hpp>
 	#include <hbrs/mpl/dt/el_dist_matrix.hpp>
@@ -63,6 +64,37 @@ namespace utf = boost::unit_test;
 namespace tt = boost::test_tools;
 
 BOOST_AUTO_TEST_SUITE(svd_test)
+
+BOOST_AUTO_TEST_CASE(svd_matrix) {
+	using namespace hbrs::mpl;
+	rtsam<double, storage_order::row_major> A{
+		{1, 2, 3,
+		 4, 5, 6,
+		 7, 8, 9}, make_matrix_size(3,3)};
+	//     Matrix B{{1, 2, 3, 4,
+	//               5, 6, 7, 8,
+	//               9, 10, 11, 12}, 3};
+	rtsam<double, storage_order::row_major> C{
+		{1, 2,  3,
+		 4, 5,  6,
+		 7, 8,  9,
+		10, 11, 12}, make_matrix_size(4,3)};
+	rtsam<double, storage_order::row_major> D{
+		{1, 0,  0,  0,
+		 0, 6,  7,  0,
+		 0, 0, 11, 12,
+		 0, 0,  0,  0}, make_matrix_size(4,4)};
+			  
+	auto ASVD{svd(A,0)};
+	auto CSVD{svd(C,0)};
+	auto DSVD{svd(D,0)};
+
+	auto AA   {ASVD.u() * ASVD.s() * transpose(ASVD.v())};
+	BOOST_TEST((*almost_equal)(AA, A));
+	BOOST_TEST((*almost_equal)(CSVD.u() * CSVD.s() * transpose(CSVD.v()), C));
+	auto DD   {DSVD.u() * DSVD.s() * transpose(DSVD.v())};
+	BOOST_TEST((*almost_equal)(DD, D));
+}
 
 using hbrs::mpl::detail::environment_fixture;
 BOOST_TEST_GLOBAL_FIXTURE(environment_fixture);
