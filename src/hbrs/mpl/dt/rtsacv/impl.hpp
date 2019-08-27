@@ -89,6 +89,24 @@ std::ostream& operator<< (std::ostream& os, rtsacv<Ring> const& v) {
     return os << '-' << std::endl;
 }
 
+template<typename Ring>
+decltype(auto)
+operator*(Ring const& s, rtsacv<Ring> const& v) {
+	return multiply(v,s);
+}
+
+template<
+	typename T1,
+	typename T2,
+	typename std::enable_if_t<
+		std::is_same_v< hana::tag_of_t<T1>, submatrix_tag > && std::is_same_v< hana::tag_of_t<T2>, rtsacv_tag >
+	>* = nullptr
+>
+decltype(auto)
+operator*(T1 && t1, T2 && t2) {
+	return multiply(HBRS_MPL_FWD(t1), HBRS_MPL_FWD(t2));
+}
+
 HBRS_MPL_NAMESPACE_END
 
 namespace boost { namespace hana {

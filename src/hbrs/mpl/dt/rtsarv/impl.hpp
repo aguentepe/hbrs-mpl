@@ -23,6 +23,7 @@
 #include <hbrs/mpl/dt/rtsacv.hpp>
 #include <hbrs/mpl/dt/range.hpp>
 #include <vector>
+#include <type_traits>
 
 #include <boost/hana/core/make.hpp>
 #include <boost/hana/core/to.hpp>
@@ -87,6 +88,20 @@ operator<< (std::ostream& os, rtsarv<Ring> const& v) {
         os << v.at(i) << "\t";
     os << std::endl;
     return os << '-' << std::endl;
+}
+
+template<
+	typename T1,
+	typename T2,
+	typename std::enable_if_t<
+		(std::is_same_v< hana::tag_of_t<T1>, rtsacv_tag > && std::is_same_v< hana::tag_of_t<T2>, rtsarv_tag    >) ||
+		(std::is_same_v< hana::tag_of_t<T1>, rtsarv_tag > && std::is_same_v< hana::tag_of_t<T2>, submatrix_tag >) ||
+		(std::is_same_v< hana::tag_of_t<T1>, rtsarv_tag > && std::is_same_v< hana::tag_of_t<T2>, rtsacv_tag    >)
+	>* = nullptr
+>
+decltype(auto)
+operator*(T1 && t1, T2 && t2) {
+	return multiply(HBRS_MPL_FWD(t1), HBRS_MPL_FWD(t2));
 }
 
 HBRS_MPL_NAMESPACE_END

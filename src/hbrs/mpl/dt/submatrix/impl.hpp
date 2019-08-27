@@ -32,6 +32,8 @@
 #include <hbrs/mpl/fn/plus.hpp>
 #include <hbrs/mpl/fn/less_equal.hpp>
 
+#include <type_traits>
+
 #include <boost/assert.hpp>
 
 HBRS_MPL_NAMESPACE_BEGIN
@@ -150,6 +152,20 @@ private:
 	Offset const o_;
 	Size const sz_;
 };
+
+template<
+	typename T1,
+	typename T2,
+	typename std::enable_if_t<
+		(std::is_same_v< hana::tag_of_t<T1>, submatrix_tag       > && std::is_same_v< hana::tag_of_t<T2>, submatrix_tag       >) ||
+		(std::is_same_v< hana::tag_of_t<T1>, submatrix_tag       > && std::is_same_v< hana::tag_of_t<T2>, givens_rotation_tag >) ||
+		(std::is_same_v< hana::tag_of_t<T1>, givens_rotation_tag > && std::is_same_v< hana::tag_of_t<T2>, submatrix_tag       >)
+	>* = nullptr
+>
+decltype(auto)
+operator*(T1 && t1, T2 && t2) {
+	return multiply(HBRS_MPL_FWD(t1), HBRS_MPL_FWD(t2));
+}
 
 HBRS_MPL_NAMESPACE_END
 

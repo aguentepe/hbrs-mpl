@@ -28,6 +28,7 @@
 #include <hbrs/mpl/dt/storage_order.hpp>
 #include <hbrs/mpl/fn/m.hpp>
 #include <hbrs/mpl/fn/n.hpp>
+#include <hbrs/mpl/fn/multiply.hpp>
 #include <hbrs/mpl/detail/translate_index.hpp>
 #include <hbrs/mpl/dt/exception.hpp>
 
@@ -36,6 +37,7 @@
 #include <boost/hana/type.hpp>
 #include <boost/assert.hpp>
 #include <vector>
+#include <type_traits>
 
 HBRS_MPL_NAMESPACE_BEGIN
 
@@ -132,6 +134,36 @@ operator<< (std::ostream& os, rtsam<Ring,Order> const& M) {
         os << std::endl;
     }
     return os << '-' << std::endl;
+}
+
+template<typename Ring, storage_order Order>
+rtsam<Ring,Order>
+operator*(rtsam<Ring,Order> const& M, Ring const& d) {
+	return multiply(M,d);
+}
+
+template<typename Ring, storage_order Order>
+rtsam<Ring,Order>
+operator*(Ring const& d, rtsam<Ring,Order> const& M) {
+	return multiply(d,M);
+}
+
+template<
+	typename T1,
+	typename T2,
+	typename std::enable_if_t<
+		(std::is_same_v< hana::tag_of_t<T1>, rtsam_tag           > && std::is_same_v< hana::tag_of_t<T2>, rtsam_tag           >) ||
+		(std::is_same_v< hana::tag_of_t<T1>, rtsam_tag           > && std::is_same_v< hana::tag_of_t<T2>, submatrix_tag       >) ||
+		(std::is_same_v< hana::tag_of_t<T1>, rtsam_tag           > && std::is_same_v< hana::tag_of_t<T2>, rtsacv_tag          >) ||
+		(std::is_same_v< hana::tag_of_t<T1>, rtsam_tag           > && std::is_same_v< hana::tag_of_t<T2>, givens_rotation_tag >) ||
+		(std::is_same_v< hana::tag_of_t<T1>, submatrix_tag       > && std::is_same_v< hana::tag_of_t<T2>, rtsam_tag           >) ||
+		(std::is_same_v< hana::tag_of_t<T1>, rtsarv_tag          > && std::is_same_v< hana::tag_of_t<T2>, rtsam_tag           >) ||
+		(std::is_same_v< hana::tag_of_t<T1>, givens_rotation_tag > && std::is_same_v< hana::tag_of_t<T2>, rtsam_tag           >)
+	>* = nullptr
+>
+decltype(auto)
+operator*(T1 && t1, T2 && t2) {
+	return multiply(HBRS_MPL_FWD(t1), HBRS_MPL_FWD(t2));
 }
 
 HBRS_MPL_NAMESPACE_END
