@@ -107,6 +107,12 @@ operator*(T1 && t1, T2 && t2) {
 	return multiply(HBRS_MPL_FWD(t1), HBRS_MPL_FWD(t2));
 }
 
+template<typename Ring>
+decltype(auto)
+operator/(rtsacv<Ring> const& v, Ring const& d) {
+	return divide(v,d);
+}
+
 HBRS_MPL_NAMESPACE_END
 
 namespace boost { namespace hana {
