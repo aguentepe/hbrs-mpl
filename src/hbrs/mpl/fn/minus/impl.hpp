@@ -25,6 +25,7 @@ HBRS_MPL_NAMESPACE_BEGIN
 HBRS_MPL_DEF_F2(minus, minus_t)
 HBRS_MPL_NAMESPACE_END
 
+#include "impl/hbrs_mpl.hpp"
 #include "impl/std.hpp"
 #include "impl/boost_hana.hpp"
 #include "impl/elemental.hpp"
