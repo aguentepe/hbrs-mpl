@@ -24,6 +24,7 @@
 #include <hbrs/mpl/dt/rtsarv.hpp>
 #include <hbrs/mpl/dt/rtsam.hpp>
 #include <hbrs/mpl/dt/submatrix.hpp>
+#include <hbrs/mpl/dt/givens_rotation.hpp>
 #include <hbrs/mpl/fn/m.hpp>
 #include <hbrs/mpl/fn/n.hpp>
 #include <hbrs/mpl/fn/size.hpp>
@@ -240,7 +241,6 @@ template<
 	typename Ring,
 	storage_order Order
 >
-/* constexpr */ 
 decltype(auto)
 multiply_impl_givens_rotation_matrix::operator()(givens_rotation<Ring> const& G, rtsam<Ring,Order> const& A) const {
 	return givens_rotation_expression<givens_rotation<Ring> const&, rtsam<Ring,Order> const&>(G,A);
@@ -255,6 +255,27 @@ template<
 decltype(auto)
 multiply_impl_givens_rotation_matrix::operator()(givens_rotation<Ring> const& G, submatrix<rtsam<Ring,Order>&, Offset, Size> const& A) const {
 	return givens_rotation_expression<givens_rotation<Ring> const&, submatrix<rtsam<Ring,Order>&, Offset, Size> const&>(G,A);
+}
+
+
+template<
+	typename Ring,
+	storage_order Order
+>
+decltype(auto)
+multiply_impl_matrix_givens_rotation::operator()(rtsam<Ring,Order> const& A, givens_rotation<Ring> const& G) const {
+	return givens_rotation_expression<rtsam<Ring,Order> const&, givens_rotation<Ring> const&>(A,G);
+}
+
+template<
+	typename Ring,
+	storage_order Order,
+	typename Offset,
+	typename Size
+>
+decltype(auto)
+multiply_impl_matrix_givens_rotation::operator()(submatrix<rtsam<Ring,Order>&, Offset, Size> const& A, givens_rotation<Ring> const& G) const {
+	return givens_rotation_expression<submatrix<rtsam<Ring,Order>&, Offset, Size> const&, givens_rotation<Ring> const&>(A,G);
 }
 
 /* namespace detail */ }

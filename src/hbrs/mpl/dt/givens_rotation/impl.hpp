@@ -57,6 +57,30 @@ G(std::size_t const i, std::size_t const k, std::array<Ring, 2> const theta) {
 	return givens_rotation{i,k,theta};
 }
 
+namespace detail {
+
+template<typename T1, typename T2>
+struct givens_rotation_expression {
+	template<typename T1_, typename T2_>
+	constexpr
+	givens_rotation_expression(T1_ && t1, T2_ && t2) : t1_{HBRS_MPL_FWD(t1)}, t2_{HBRS_MPL_FWD(t2)} {}
+
+	constexpr decltype(auto)
+	t1() const {
+		return (t1_);
+	}
+
+	constexpr decltype(auto)
+	t2() const {
+		return (t2_);
+	}
+private:
+	T1 t1_;
+	T2 t2_;
+};
+
+/* namespace detail */ }
+
 HBRS_MPL_NAMESPACE_END
 
 namespace boost { namespace hana {

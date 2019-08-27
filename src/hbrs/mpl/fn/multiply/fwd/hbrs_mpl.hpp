@@ -23,6 +23,7 @@
 #include <hbrs/mpl/dt/rtsarv/fwd.hpp>
 #include <hbrs/mpl/dt/rtsam/fwd.hpp>
 #include <hbrs/mpl/dt/submatrix/fwd.hpp>
+#include <hbrs/mpl/dt/givens_rotation/fwd.hpp>
 
 HBRS_MPL_NAMESPACE_BEGIN
 namespace hana = boost::hana;
@@ -172,6 +173,42 @@ struct multiply_impl_ring_rtsam {
 	operator()(Ring const& d, rtsam<Ring,Order> M) const;
 };
 
+struct multiply_impl_givens_rotation_matrix {
+	template<
+		typename Ring,
+		storage_order Order
+	>
+	decltype(auto)
+	operator()(givens_rotation<Ring> const& G, rtsam<Ring,Order> const& A) const;
+
+	template<
+		typename Ring,
+		storage_order Order,
+		typename Offset,
+		typename Size
+	>
+	decltype(auto)
+	operator()(givens_rotation<Ring> const& G, submatrix<rtsam<Ring,Order>&, Offset, Size> const& A) const;
+};
+
+struct multiply_impl_matrix_givens_rotation {
+	template<
+		typename Ring,
+		storage_order Order
+	>
+	decltype(auto)
+	operator()(rtsam<Ring,Order> const& A, givens_rotation<Ring> const& G) const;
+
+	template<
+		typename Ring,
+		storage_order Order,
+		typename Offset,
+		typename Size
+	>
+	decltype(auto)
+	operator()(submatrix<rtsam<Ring,Order>&, Offset, Size> const& A, givens_rotation<Ring> const& G) const;
+};
+
 /* namespace detail */ }
 HBRS_MPL_NAMESPACE_END
 
@@ -184,7 +221,9 @@ HBRS_MPL_NAMESPACE_END
 		hbrs::mpl::detail::multiply_impl_rtsarv_matrix{},                                                              \
 		hbrs::mpl::detail::multiply_impl_matrix_rtsacv{},                                                              \
 		hbrs::mpl::detail::multiply_impl_rtsam_ring{},                                                                 \
-		hbrs::mpl::detail::multiply_impl_ring_rtsam{}                                                                  \
+		hbrs::mpl::detail::multiply_impl_ring_rtsam{},                                                                 \
+		hbrs::mpl::detail::multiply_impl_givens_rotation_matrix{},                                                     \
+		hbrs::mpl::detail::multiply_impl_matrix_givens_rotation{}                                                      \
 	)
 
 #endif // !HBRS_MPL_FN_MULTIPLY_FWD_HBRS_MPL_HPP
