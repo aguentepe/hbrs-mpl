@@ -25,11 +25,13 @@
 #include <hbrs/mpl/dt/smr.hpp>
 #include <hbrs/mpl/dt/rtsacv.hpp>
 #include <hbrs/mpl/dt/rtsarv.hpp>
+#include <hbrs/mpl/dt/range.hpp>
 #include <hbrs/mpl/dt/storage_order.hpp>
 #include <hbrs/mpl/fn/m.hpp>
 #include <hbrs/mpl/fn/n.hpp>
 #include <hbrs/mpl/fn/minus.hpp>
 #include <hbrs/mpl/fn/multiply.hpp>
+#include <hbrs/mpl/fn/select.hpp>
 #include <hbrs/mpl/detail/translate_index.hpp>
 #include <hbrs/mpl/dt/exception.hpp>
 
@@ -116,6 +118,19 @@ struct rtsam {
 	auto
 	operator[](Index && i) && { return make_smr(std::move(*this), HBRS_MPL_FWD(i)); }
 	
+    // Several operator() functions to return submatrices.
+	decltype(auto)
+	operator()(range<std::size_t,std::size_t> const& rows, std::size_t const column) const {
+		return select(*this, std::make_pair(rows, column));
+	}
+	decltype(auto)
+	operator()(std::size_t const row, range<std::size_t,std::size_t> const& columns) const {
+		return select(*this, std::make_pair(row, columns));
+	}
+	decltype(auto)
+	operator()(range<std::size_t,std::size_t> const& rows, range<std::size_t,std::size_t> const& columns) & {
+		return select(*this, std::make_pair(rows, columns));
+	}
 private:
 	std::vector<Ring> data_;
 	matrix_size<std::size_t, std::size_t> size_;

@@ -31,6 +31,7 @@
 #include <hbrs/mpl/fn/n.hpp>
 #include <hbrs/mpl/fn/plus.hpp>
 #include <hbrs/mpl/fn/less_equal.hpp>
+#include <hbrs/mpl/fn/select.hpp>
 
 #include <type_traits>
 
@@ -147,6 +148,19 @@ struct submatrix {
 		);
 	}
 	
+	decltype(auto)
+	operator()(range<std::size_t,std::size_t> const& rows, std::size_t const column) const {
+		return select(*this, std::make_pair(rows, column));
+	}
+	decltype(auto)
+	operator()(std::size_t const row, range<std::size_t,std::size_t> const& columns) const {
+		return select(*this, std::make_pair(row, columns));
+	}
+	decltype(auto)
+	operator()(range<std::size_t,std::size_t> const& rows, range<std::size_t,std::size_t> const& columns) & {
+		return select(*this, std::make_pair(rows, columns));
+	}
+
 private:
 	Matrix mat_;
 	Offset const o_;
