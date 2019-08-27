@@ -20,6 +20,7 @@
 #include <hbrs/mpl/config.hpp>
 #include <hbrs/mpl/core/preprocessor.hpp>
 #include <hbrs/mpl/dt/rtsacv/fwd.hpp>
+#include <hbrs/mpl/dt/rtsarv/fwd.hpp>
 
 HBRS_MPL_NAMESPACE_BEGIN
 namespace hana = boost::hana;
@@ -37,12 +38,26 @@ struct multiply_impl_ring_rtsacv {
 	operator()(Ring const& s, rtsacv<Ring> v) const;
 };
 
+struct multiply_impl_rtsarv_rtsacv {
+	template<typename Ring>
+	decltype(auto)
+	operator()(rtsarv<Ring> const& v1, rtsacv<Ring> const& v2) const;
+};
+
+struct multiply_impl_rtsacv_rtsarv {
+	template<typename Ring>
+	decltype(auto)
+	operator()(rtsacv<Ring> const& v1, rtsarv<Ring> const& v2) const;
+};
+
 /* namespace detail */ }
 HBRS_MPL_NAMESPACE_END
 
 #define HBRS_MPL_FN_MULTIPLY_IMPLS_HBRS_MPL boost::hana::make_tuple(                                                   \
 		hbrs::mpl::detail::multiply_impl_rtsacv_ring{},                                                                \
-		hbrs::mpl::detail::multiply_impl_ring_rtsacv{}                                                                 \
+		hbrs::mpl::detail::multiply_impl_ring_rtsacv{},                                                                \
+		hbrs::mpl::detail::multiply_impl_rtsarv_rtsacv{},                                                              \
+		hbrs::mpl::detail::multiply_impl_rtsacv_rtsarv{}                                                               \
 	)
 
 #endif // !HBRS_MPL_FN_MULTIPLY_FWD_HBRS_MPL_HPP
