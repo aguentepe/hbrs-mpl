@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2018 Jakob Meng, <jakobmeng@web.de>
+/* Copyright (c) 2019 Abdullah Güntepe, <abdullah@guentepe.com>
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,22 +14,23 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef HBRS_MPL_FN_DIVIDE_FWD_HPP
-#define HBRS_MPL_FN_DIVIDE_FWD_HPP
+#ifndef HBRS_MPL_FN_DIVIDE_IMPL_HBRS_MPL_HPP
+#define HBRS_MPL_FN_DIVIDE_IMPL_HBRS_MPL_HPP
 
-#include <hbrs/mpl/config.hpp>
-#include <hbrs/mpl/dt/function/fwd.hpp>
-#include <hbrs/mpl/core/implementations_of.hpp>
+#include "../fwd/hbrs_mpl.hpp"
+
+#include <hbrs/mpl/dt/rtsacv.hpp>
 
 HBRS_MPL_NAMESPACE_BEGIN
-HBRS_MPL_DEC_F2(divide, divide_t)
+namespace detail {
+
+template<typename Ring>
+decltype(auto)
+divide_impl_rtsacv_ring::operator()(rtsacv<Ring> const& v, Ring const& d) const {
+	return 1. / d * v;
+}
+
+/* namespace detail */ }
 HBRS_MPL_NAMESPACE_END
 
-#include "fwd/hbrs_mpl.hpp"
-#include "fwd/boost_hana.hpp"
-#include "fwd/elemental.hpp"
-#include "fwd/std.hpp"
-
-HBRS_MPL_MAP_IMPLS(divide_t, HBRS_MPL_FN_DIVIDE_IMPLS_HBRS_MPL, HBRS_MPL_FN_DIVIDE_IMPLS_BOOST_HANA, HBRS_MPL_FN_DIVIDE_IMPLS_ELEMENTAL, HBRS_MPL_FN_DIVIDE_IMPLS_STD)
-
-#endif // !HBRS_MPL_FN_DIVIDE_FWD_HPP
+#endif // !HBRS_MPL_FN_DIVIDE_IMPL_HBRS_MPL_HPP

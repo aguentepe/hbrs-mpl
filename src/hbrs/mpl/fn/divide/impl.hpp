@@ -25,6 +25,7 @@ HBRS_MPL_NAMESPACE_BEGIN
 HBRS_MPL_DEF_F2(divide, divide_t)
 HBRS_MPL_NAMESPACE_END
 
+#include "impl/hbrs_mpl.hpp"
 #include "impl/boost_hana.hpp"
 #include "impl/elemental.hpp"
 #include "impl/std.hpp"
