@@ -21,6 +21,8 @@
 #include <hbrs/mpl/core/preprocessor.hpp>
 #include <hbrs/mpl/dt/rtsacv/fwd.hpp>
 #include <hbrs/mpl/dt/rtsarv/fwd.hpp>
+#include <hbrs/mpl/dt/rtsam/fwd.hpp>
+#include <hbrs/mpl/dt/submatrix/fwd.hpp>
 
 HBRS_MPL_NAMESPACE_BEGIN
 namespace hana = boost::hana;
@@ -50,6 +52,126 @@ struct multiply_impl_rtsacv_rtsarv {
 	operator()(rtsacv<Ring> const& v1, rtsarv<Ring> const& v2) const;
 };
 
+struct multiply_impl_matrix_matrix {
+
+	template<
+		typename Ring,
+		storage_order Order
+	>
+	decltype(auto)
+	operator()(rtsam<Ring,Order> const& M1, rtsam<Ring,Order> const& M2) const;
+
+	template<
+		typename Ring,
+		storage_order Order,
+		typename Offset,
+		typename Size
+	>
+	decltype(auto)
+	operator()(submatrix<rtsam<Ring,Order>&, Offset,Size> const& M1, submatrix<rtsam<Ring,Order>&, Offset,Size> const& M2) const;
+
+	template<
+		typename Ring,
+		storage_order Order,
+		typename Offset,
+		typename Size
+	>
+	decltype(auto)
+	operator()(rtsam<Ring,Order> const& M1, submatrix<rtsam<Ring,Order>&, Offset,Size> const& M2) const;
+
+	template<
+		typename Ring,
+		storage_order Order,
+		typename Offset,
+		typename Size
+	>
+	decltype(auto)
+	operator()(submatrix<rtsam<Ring,Order>&, Offset,Size> const& M1, rtsam<Ring,Order> const& M2) const;
+
+private:
+	template<
+		typename Ring,
+		typename Matrix1,
+		typename Matrix2
+	>
+	decltype(auto)
+	impl(Matrix1 const& M1, Matrix2 const& M2, hana::basic_type<Ring>) const;
+};
+
+struct multiply_impl_rtsarv_matrix {
+
+	template<
+		typename Ring,
+		storage_order Order
+	>
+	decltype(auto)
+	operator()(rtsarv<Ring> const& v, rtsam<Ring,Order> const& M) const;
+
+	template<
+		typename Ring,
+		storage_order Order,
+		typename Offset,
+		typename Size
+	>
+	decltype(auto)
+	operator()(rtsarv<Ring> const& v, submatrix<rtsam<Ring,Order>&, Offset,Size> const& M) const;
+
+private:
+	template<
+		typename Ring,
+		typename RVector,
+		typename Matrix
+	>
+	decltype(auto)
+	impl(RVector const& vp, Matrix const& Mp, hana::basic_type<Ring>) const;
+};
+
+struct multiply_impl_matrix_rtsacv {
+
+	template<
+		typename Ring,
+		storage_order Order
+	>
+	decltype(auto)
+	operator()(rtsam<Ring,Order> const& M, rtsacv<Ring> const& v) const;
+
+	template<
+		typename Ring,
+		storage_order Order,
+		typename Offset,
+		typename Size
+	>
+	decltype(auto)
+	operator()(submatrix<rtsam<Ring,Order>&, Offset,Size> const& M, rtsacv<Ring> const& v) const;
+
+private:
+	template<
+		typename Ring,
+		typename Matrix,
+		typename CVector
+	>
+	decltype(auto)
+	impl(Matrix const& M, CVector const& v, hana::basic_type<Ring>) const;
+};
+
+struct multiply_impl_rtsam_ring {
+	template<
+		typename Ring,
+		storage_order Order
+	>
+	decltype(auto)
+	operator()(rtsam<Ring,Order> M, Ring const& d) const;
+};
+
+struct multiply_impl_ring_rtsam {
+	template<
+		typename Ring,
+		storage_order Order
+	>
+	decltype(auto)
+	operator()(Ring const& d, rtsam<Ring,Order> M) const;
+};
+
 /* namespace detail */ }
 HBRS_MPL_NAMESPACE_END
 
@@ -57,7 +179,12 @@ HBRS_MPL_NAMESPACE_END
 		hbrs::mpl::detail::multiply_impl_rtsacv_ring{},                                                                \
 		hbrs::mpl::detail::multiply_impl_ring_rtsacv{},                                                                \
 		hbrs::mpl::detail::multiply_impl_rtsarv_rtsacv{},                                                              \
-		hbrs::mpl::detail::multiply_impl_rtsacv_rtsarv{}                                                               \
+		hbrs::mpl::detail::multiply_impl_rtsacv_rtsarv{},                                                              \
+		hbrs::mpl::detail::multiply_impl_matrix_matrix{},                                                              \
+		hbrs::mpl::detail::multiply_impl_rtsarv_matrix{},                                                              \
+		hbrs::mpl::detail::multiply_impl_matrix_rtsacv{},                                                              \
+		hbrs::mpl::detail::multiply_impl_rtsam_ring{},                                                                 \
+		hbrs::mpl::detail::multiply_impl_ring_rtsam{}                                                                  \
 	)
 
 #endif // !HBRS_MPL_FN_MULTIPLY_FWD_HBRS_MPL_HPP

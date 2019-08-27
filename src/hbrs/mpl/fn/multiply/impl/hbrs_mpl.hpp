@@ -19,8 +19,11 @@
 
 #include "../fwd/hbrs_mpl.hpp"
 
+#include <hbrs/mpl/dt/range.hpp>
 #include <hbrs/mpl/dt/rtsacv.hpp>
 #include <hbrs/mpl/dt/rtsarv.hpp>
+#include <hbrs/mpl/dt/rtsam.hpp>
+#include <hbrs/mpl/dt/submatrix.hpp>
 #include <hbrs/mpl/fn/m.hpp>
 #include <hbrs/mpl/fn/n.hpp>
 #include <hbrs/mpl/fn/size.hpp>
@@ -69,6 +72,189 @@ multiply_impl_rtsacv_rtsarv::operator()(rtsacv<Ring> const& v1, rtsarv<Ring> con
 		}
 	}
 	return result;
+}
+
+
+template<
+	typename Ring,
+	storage_order Order
+>
+decltype(auto)
+multiply_impl_matrix_matrix::operator()(rtsam<Ring,Order> const& M1, rtsam<Ring,Order> const& M2) const {
+	return impl(M1,M2, hana::type_c<Ring>);
+}
+
+template<
+	typename Ring,
+	storage_order Order,
+	typename Offset,
+	typename Size
+>
+decltype(auto)
+multiply_impl_matrix_matrix::operator()(submatrix<rtsam<Ring,Order>&, Offset,Size> const& M1, submatrix<rtsam<Ring,Order>&, Offset,Size> const& M2) const {
+	return impl(M1,M2, hana::type_c<Ring>);
+}
+
+template<
+	typename Ring,
+	storage_order Order,
+	typename Offset,
+	typename Size
+>
+decltype(auto)
+multiply_impl_matrix_matrix::operator()(rtsam<Ring,Order> const& M1, submatrix<rtsam<Ring,Order>&, Offset,Size> const& M2) const {
+	return impl(M1,M2, hana::type_c<Ring>);
+}
+
+template<
+	typename Ring,
+	storage_order Order,
+	typename Offset,
+	typename Size
+>
+decltype(auto)
+multiply_impl_matrix_matrix::operator()(submatrix<rtsam<Ring,Order>&, Offset,Size> const& M1, rtsam<Ring,Order> const& M2) const {
+	return impl(M1,M2, hana::type_c<Ring>);
+}
+
+template<
+	typename Ring,
+	typename Matrix1,
+	typename Matrix2
+>
+decltype(auto)
+multiply_impl_matrix_matrix::impl(Matrix1 const& M1, Matrix2 const& M2, hana::basic_type<Ring>) const {
+	BOOST_ASSERT((*n)((*size)(M1)) == (*m)((*size)(M2)));
+
+	typedef std::decay_t<Ring> _Ring_;
+	rtsam<_Ring_, storage_order::row_major> result {(*m)((*size)(M1)), (*n)((*size)(M2))};
+	for (std::size_t i {0}; i < (*m)((*size)(result)); ++i) {
+		for (std::size_t j {0}; j < (*n)((*size)(result)); ++j) {
+			result.at(make_matrix_index(i, j)) = M1(i, range<std::size_t,std::size_t>(std::size_t{0}, (*n)((*size)(M1)) - 1)) * M2(range<std::size_t,std::size_t>(std::size_t{0}, (*m)((*size)(M2)) - 1), j);
+		}
+	}
+	return result;
+}
+
+
+template<
+	typename Ring,
+	storage_order Order
+>
+decltype(auto)
+multiply_impl_rtsarv_matrix::operator()(rtsarv<Ring> const& v, rtsam<Ring,Order> const& M) const {
+	return impl(v,M, hana::type_c<Ring>);
+}
+
+template<
+	typename Ring,
+	storage_order Order,
+	typename Offset,
+	typename Size
+>
+decltype(auto)
+multiply_impl_rtsarv_matrix::operator()(rtsarv<Ring> const& v, submatrix<rtsam<Ring,Order>&, Offset,Size> const& M) const {
+	return impl(v,M, hana::type_c<Ring>);
+}
+
+template<
+	typename Ring,
+	typename RVector,
+	typename Matrix
+>
+decltype(auto)
+multiply_impl_rtsarv_matrix::impl(RVector const& v, Matrix const& M, hana::basic_type<Ring>) const {
+	BOOST_ASSERT(v.length() == (*m)((*size)(M)));
+
+	rtsarv<Ring> result((*n)((*size)(M)));
+	for (std::size_t i {0}; i < result.length(); ++i) {
+		result.at(i) = v * M(range<std::size_t,std::size_t>(std::size_t{0}, (*m)((*size)(M)) - 1), i);
+	}
+	return result;
+}
+
+
+template<
+	typename Ring,
+	storage_order Order
+>
+decltype(auto)
+multiply_impl_matrix_rtsacv::operator()(rtsam<Ring,Order> const& M, rtsacv<Ring> const& v) const {
+	return impl(M,v, hana::type_c<Ring>);
+}
+
+template<
+	typename Ring,
+	storage_order Order,
+	typename Offset,
+	typename Size
+>
+decltype(auto)
+multiply_impl_matrix_rtsacv::operator()(submatrix<rtsam<Ring,Order>&, Offset,Size> const& M, rtsacv<Ring> const& v) const {
+	return impl(M,v, hana::type_c<Ring>);
+}
+
+template<
+	typename Ring,
+	typename Matrix,
+	typename CVector
+>
+decltype(auto)
+multiply_impl_matrix_rtsacv::impl(Matrix const& M, CVector const& v, hana::basic_type<Ring>) const {
+	BOOST_ASSERT((*n)((*size)(M)) == v.length());
+
+	rtsacv<Ring> result((*m)((*size)(M)));
+	for (std::size_t i {0}; i < result.length(); ++i) {
+		result.at(i) = M(i, range<std::size_t,std::size_t>(std::size_t{0}, (*n)((*size)(M)) - 1)) * v;
+	}
+	return result;
+}
+
+
+template<
+	typename Ring,
+	storage_order Order
+>
+decltype(auto)
+multiply_impl_rtsam_ring::operator()(rtsam<Ring,Order> M, Ring const& d) const {
+	for (std::size_t i {0}; i < (*m)((*size)(M)); ++i) {
+		for (std::size_t j {0}; j < (*n)((*size)(M)); ++j) {
+			M.at(make_matrix_index(i,j)) = M.at(make_matrix_index(i,j)) * d;
+		}
+	}
+	return M;
+}
+
+
+template<
+	typename Ring,
+	storage_order Order
+>
+decltype(auto)
+multiply_impl_ring_rtsam::operator()(Ring const& d, rtsam<Ring,Order> M) const {
+	return multiply(M,d);
+}
+
+
+template<
+	typename Ring,
+	storage_order Order
+>
+/* constexpr */ 
+decltype(auto)
+multiply_impl_givens_rotation_matrix::operator()(givens_rotation<Ring> const& G, rtsam<Ring,Order> const& A) const {
+	return givens_rotation_expression<givens_rotation<Ring> const&, rtsam<Ring,Order> const&>(G,A);
+}
+
+template<
+	typename Ring,
+	storage_order Order,
+	typename Offset,
+	typename Size
+>
+decltype(auto)
+multiply_impl_givens_rotation_matrix::operator()(givens_rotation<Ring> const& G, submatrix<rtsam<Ring,Order>&, Offset, Size> const& A) const {
+	return givens_rotation_expression<givens_rotation<Ring> const&, submatrix<rtsam<Ring,Order>&, Offset, Size> const&>(G,A);
 }
 
 /* namespace detail */ }
