@@ -82,14 +82,6 @@ private:
 };
 
 template<typename Ring>
-std::ostream& operator<< (std::ostream& os, rtsacv<Ring> const& v) {
-    os << '-' << std::endl;
-    for (std::size_t i {0}; i < v.length(); ++i)
-        os << v.at(i) << std::endl;
-    return os << '-' << std::endl;
-}
-
-template<typename Ring>
 decltype(auto)
 operator*(Ring const& s, rtsacv<Ring> const& v) {
 	return multiply(v,s);

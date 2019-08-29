@@ -80,16 +80,6 @@ private:
 	rtsacv<Ring> vector_;
 };
 
-template<typename Ring>
-std::ostream&
-operator<< (std::ostream& os, rtsarv<Ring> const& v) {
-    os << '-' << std::endl;
-    for (std::size_t i {0}; i < v.n(); ++i)
-        os << v.at(i) << "\t";
-    os << std::endl;
-    return os << '-' << std::endl;
-}
-
 template<
 	typename T1,
 	typename T2,
